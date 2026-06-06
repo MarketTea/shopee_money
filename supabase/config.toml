@@ -1,0 +1,7 @@
+project_id = "landing-sp-ref"
+
+[functions.convert-link]
+verify_jwt = true
+
+[functions.record-click]
+verify_jwt = true

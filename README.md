@@ -1,0 +1,58 @@
+# landing-sp-ref
+
+Landing page chuyển link Shopee Affiliate, đã thêm bản v1 tracking user bằng Supabase.
+
+## Supabase setup
+
+1. Tạo Supabase project mới.
+2. Trong Supabase Dashboard, bật `Authentication > Providers > Google`.
+3. Thêm redirect URL cho domain chạy landing page, ví dụ:
+   - `http://localhost:8000`
+   - domain production của bạn
+4. Chạy migration:
+
+```bash
+supabase link --project-ref YOUR_PROJECT_REF
+supabase db push
+```
+
+5. Deploy Edge Function:
+
+```bash
+supabase functions deploy convert-link
+supabase functions deploy record-click
+```
+
+6. Set secret cho Edge Function:
+
+```bash
+supabase secrets set SHOPEE_AFFILIATE_ID=17305840167
+```
+
+7. Mở `index.html` và thay:
+
+```js
+const SUPABASE_URL = 'https://YOUR_PROJECT_REF.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+```
+
+## Luồng tracking
+
+- User đăng nhập Google qua Supabase Auth.
+- Frontend gọi Supabase Edge Function `convert-link`.
+- Function tạo `sub_id` dạng `u_<userShortId>_l_<linkShortId>`.
+- Function lưu mapping vào bảng `affiliate_links`.
+- Frontend hiển thị affiliate URL và lịch sử link của user.
+- Khi user mở link Shopee, frontend gọi `record-click` để lưu lượt click vào bảng `clicks`.
+
+## Database
+
+Migration `supabase/migrations/202606020001_affiliate_tracking_v1.sql` tạo:
+
+- `profiles`
+- `affiliate_links`
+- `clicks`
+- `orders`
+- `commission_ledger`
+
+Các bảng đã bật RLS. User chỉ đọc được dữ liệu của chính họ; việc insert link được thực hiện qua Edge Function.

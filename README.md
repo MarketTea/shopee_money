@@ -55,4 +55,10 @@ Migration `supabase/migrations/202606020001_affiliate_tracking_v1.sql` tạo:
 - `orders`
 - `commission_ledger`
 
+Migration `supabase/migrations/202606080001_payout_qr_profiles.sql` thêm:
+
+- thông tin QR nhận hoàn tiền trong `profiles`
+- private Storage bucket `payout-qr`
+- Storage RLS để user chỉ thao tác file QR của chính mình
+
 Các bảng đã bật RLS. User chỉ đọc được dữ liệu của chính họ; việc insert link được thực hiện qua Edge Function.

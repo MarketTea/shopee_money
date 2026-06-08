@@ -64,27 +64,33 @@ alter table public.clicks enable row level security;
 alter table public.orders enable row level security;
 alter table public.commission_ledger enable row level security;
 
+drop policy if exists "Users can read their own profile" on public.profiles;
 create policy "Users can read their own profile"
   on public.profiles for select
   using (auth.uid() = id);
 
+drop policy if exists "Users can update their own profile" on public.profiles;
 create policy "Users can update their own profile"
   on public.profiles for update
   using (auth.uid() = id)
   with check (auth.uid() = id);
 
+drop policy if exists "Users can read their own affiliate links" on public.affiliate_links;
 create policy "Users can read their own affiliate links"
   on public.affiliate_links for select
   using (auth.uid() = user_id);
 
+drop policy if exists "Users can read their own clicks" on public.clicks;
 create policy "Users can read their own clicks"
   on public.clicks for select
   using (auth.uid() = user_id);
 
+drop policy if exists "Users can read their own orders" on public.orders;
 create policy "Users can read their own orders"
   on public.orders for select
   using (auth.uid() = user_id);
 
+drop policy if exists "Users can read their own commission ledger" on public.commission_ledger;
 create policy "Users can read their own commission ledger"
   on public.commission_ledger for select
   using (auth.uid() = user_id);

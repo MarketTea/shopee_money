@@ -24,6 +24,8 @@
         onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">Tính năng</a>
       <a href="javascript:void(0)" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">Cách
         hoạt động</a>
+      <a href="javascript:void(0)" onclick="document.getElementById('payout').scrollIntoView({behavior:'smooth'})">QR
+        nhận tiền</a>
       <a href="javascript:void(0)" onclick="document.getElementById('convert').scrollIntoView({behavior:'smooth'})"
         class="nav-cta">Chuyển Link</a>
     </nav>
@@ -33,8 +35,8 @@
   <section class="hero" id="convert">
     <div class="badge"><span class="dot"></span> Shopee Affiliate — Chia sẻ nhiều hơn, Thu nhập lớn hơn</div>
     <h1>Chia sẻ. Kiếm tiền.<br><span class="yellow">Nhận hoàn tiền.</span></h1>
-    <p class="sub">Affiliate Shopee tự động tìm kiếm hoàn tiền và phần thưởng tiếp thị liên kết trên mỗi đơn hàng bạn
-      mua — biến chi tiêu hàng ngày thành tiền mặt tích lũy của riêng bạn.</p>
+    <p class="sub">💰 Hoàn tiền lên đến 50% cho mỗi đơn hàng Shopee thành công — mua sắm như bình thường, nhận lại tiền
+      thật sau mỗi lần thanh toán.</p>
 
     <!-- CONVERTER -->
     <div class="converter-box">
@@ -104,6 +106,56 @@
         <strong>Miễn phí</strong>
         <span>Không phí đăng ký</span>
       </div>
+    </div>
+  </section>
+
+  <!-- PAYOUT QR -->
+  <section class="payout-section" id="payout">
+    <div class="payout-header reveal">
+      <p class="section-label">Thông tin nhận hoàn tiền</p>
+      <h2 class="section-title">Tải mã QR nhận chuyển khoản</h2>
+      <p class="section-sub">Khi đơn hàng được xác nhận hợp lệ, admin sẽ dùng thông tin này để chuyển khoản hoàn tiền
+        cho bạn.</p>
+    </div>
+
+    <div class="payout-panel reveal">
+      <div class="payout-locked" id="payoutLoggedOut">
+        <div>
+          <div class="payout-lock-title">Đăng nhập để thêm mã QR</div>
+          <p>Thông tin nhận tiền được gắn với tài khoản Google của bạn.</p>
+        </div>
+        <button class="btn-auth" onclick="signInWithGoogle()" type="button">Đăng nhập Google</button>
+      </div>
+
+      <form class="payout-form" id="payoutForm" onsubmit="savePayoutQr(event)">
+        <div class="payout-grid">
+          <div class="payout-fields">
+            <label for="payoutRecipientName">Tên người nhận</label>
+            <input type="text" id="payoutRecipientName" class="payout-input" placeholder="Ví dụ: Nguyễn Văn A"
+              autocomplete="name" maxlength="120" />
+
+            <label for="payoutQrInput">Ảnh mã QR ngân hàng hoặc ví</label>
+            <input type="file" id="payoutQrInput" class="payout-file" accept="image/png,image/jpeg,image/webp"
+              onchange="handlePayoutQrSelected(event)" />
+            <div class="payout-help">Chấp nhận PNG, JPG, JPEG, WEBP. Dung lượng tối đa 2MB.</div>
+            <div class="payout-file-name" id="payoutFileName"></div>
+          </div>
+
+          <div class="payout-preview">
+            <img id="payoutQrPreview" alt="Mã QR nhận hoàn tiền" />
+            <div class="payout-preview-empty" id="payoutQrEmpty">Chưa có mã QR</div>
+          </div>
+        </div>
+
+        <div class="payout-actions">
+          <button class="btn-convert" id="payoutSaveBtn" type="submit">
+            <span id="payoutSaveLabel">Lưu thông tin nhận tiền</span>
+            <div class="spinner" id="payoutSpinner"></div>
+          </button>
+          <div class="payout-uploaded-at" id="payoutUploadedAt"></div>
+        </div>
+        <div class="payout-status" id="payoutStatus"></div>
+      </form>
     </div>
   </section>
 

@@ -10,6 +10,10 @@ const supabaseClient = SUPABASE_READY && window.supabase
 let currentUser = null;
 let currentAffiliateLinkId = null;
 
+function getAuthRedirectUrl() {
+  return `${window.location.origin}${window.location.pathname}`;
+}
+
 // Cấu hình mã giới thiệu động (tự động thay đổi theo ngày)
 const REFERRAL_CONFIG = {
   defaultCode: '4TVCRM7',
@@ -94,7 +98,7 @@ async function signInWithGoogle() {
   const { error } = await supabaseClient.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: window.location.href.split('#')[0]
+      redirectTo: getAuthRedirectUrl()
     }
   });
 

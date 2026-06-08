@@ -1,0 +1,111 @@
+/* ── RESPONSIVE ── */
+@media (max-width: 992px) {
+  nav a {
+    margin-left: 1.2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  nav a:not(.nav-cta) {
+    display: none;
+  }
+
+  header {
+    padding: 1rem 4%;
+  }
+
+  .hero {
+    padding: 4rem 5% 3rem;
+  }
+
+  .converter-box {
+    padding: 1.4rem 1.2rem;
+  }
+
+  .input-row {
+    flex-direction: column;
+  }
+
+  .auth-panel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .auth-actions {
+    width: 100%;
+  }
+
+  .payout-locked,
+  .payout-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .payout-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .payout-preview {
+    max-width: 260px;
+  }
+
+  .btn-auth {
+    flex: 1;
+  }
+
+  .btn-convert {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .hero-stat-row {
+    gap: 2rem;
+  }
+
+  .cta-card {
+    padding: 2rem 1.3rem;
+  }
+
+  .referral-code-box {
+    font-size: 1.25rem;
+    padding: 0.65rem 1.5rem;
+    letter-spacing: 0.05em;
+  }
+
+  footer {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo {
+    font-size: 1.15rem;
+  }
+
+  .logo-s {
+    width: 26px;
+    height: 26px;
+    font-size: 0.95rem;
+  }
+
+  .nav-cta {
+    padding: 0.4rem 0.9rem;
+    font-size: 0.82rem !important;
+  }
+}
+
+@media (max-width: 360px) {
+  header {
+    padding: 0.8rem 3%;
+  }
+
+  .logo {
+    font-size: 1.05rem;
+  }
+
+  .nav-cta {
+    padding: 0.35rem 0.8rem;
+    font-size: 0.78rem !important;
+  }
+}

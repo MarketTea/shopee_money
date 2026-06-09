@@ -3,14 +3,14 @@ header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.2rem 5%;
+  padding: 0.9rem 5%;
   border-bottom: 1px solid rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(180, 45, 20, 0.7);
+  background: rgba(255, 30, 22, 0.65);
 }
 
 .logo {
@@ -27,16 +27,11 @@ header {
   flex-shrink: 0;
 }
 
-.logo-s {
-  width: 30px;
-  height: 30px;
-  background: #fff;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
-  flex-shrink: 0;
+.logo-img {
+  height: 56px;
+  width: auto;
+  object-fit: contain;
+  display: block;
 }
 
 nav {
@@ -76,4 +71,3 @@ nav a:hover {
   opacity: 0.9;
   transform: translateY(-1px);
 }
-

@@ -83,10 +83,8 @@
     font-size: 1.15rem;
   }
 
-  .logo-s {
-    width: 26px;
-    height: 26px;
-    font-size: 0.95rem;
+  .logo-img {
+    height: 38px;
   }
 
   .nav-cta {

@@ -6,7 +6,7 @@ Nâng cấp landing page chuyển link Shopee từ bản HTML tĩnh sang hệ th
 
 - Google Login để định danh user.
 - Database lưu mapping giữa user, link Shopee, `sub_id`, click và đơn hàng.
-- Backend tạo affiliate link thay vì tạo `sub_id` trực tiếp trên browser.
+- Backend gọi ShopeeCD API để tạo affiliate link thay vì tự nối tham số trên browser/server.
 - Nền tảng để sau này đối soát đơn Shopee và chia lại hoa hồng cho user.
 
 ## Kiến trúc đã chọn
@@ -16,12 +16,13 @@ Nâng cấp landing page chuyển link Shopee từ bản HTML tĩnh sang hệ th
 - Database: Supabase Postgres.
 - Backend: Supabase Edge Functions.
 - Tracking key: `sub_id` dạng `u_<userShortId>_l_<linkShortId>`.
+- Convert API: `POST https://shopeecd.vercel.app/api/public/shopee/convert-link`.
 
 ## Những phần đã thêm vào project
 
 - Landing page đã có khu vực đăng nhập Google, trạng thái user, form convert link và lịch sử link.
 - Frontend không còn tự tạo `sub_id` bằng timestamp.
-- Frontend gọi Edge Function `convert-link` để tạo affiliate link có tracking.
+- Frontend gọi Edge Function `convert-link` để tạo affiliate link có tracking qua ShopeeCD API.
 - Frontend gọi Edge Function `record-click` khi user mở affiliate link.
 - Migration Supabase đã tạo các bảng:
   - `profiles`
@@ -30,8 +31,16 @@ Nâng cấp landing page chuyển link Shopee từ bản HTML tĩnh sang hệ th
   - `orders`
   - `commission_ledger`
 - RLS đã bật để user chỉ đọc được dữ liệu của chính họ.
-- Edge Function `convert-link` đã tạo và lưu affiliate link.
+- Edge Function `convert-link` đã tạo và lưu affiliate link, hoa hồng ước tính và rate từ ShopeeCD API.
 - Edge Function `record-click` đã tạo để lưu click.
+
+## ShopeeCD API response đang dùng
+
+- `results[0].shortLink || results[0].longLink` lưu vào `affiliate_links.affiliate_url`.
+- `results[0].commission` lưu vào `affiliate_links.estimated_commission`.
+- `results[0].rate` lưu vào `affiliate_links.commission_rate`.
+- `results[0].commission_name` lưu vào `affiliate_links.product_name`.
+- `results[0].product_image` lưu vào `affiliate_links.product_image`.
 
 ## Việc cần làm để chạy thật
 
@@ -78,6 +87,7 @@ const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 - [x] Test login Google trên local domain đã khai báo redirect.
 - [x] Test convert link Shopee sau khi login.
 - [x] Kiểm tra bảng `affiliate_links` có record mới với đúng `user_id` và `sub_id`.
+- [x] Kiểm tra bảng `affiliate_links` có `estimated_commission` và `commission_rate` từ ShopeeCD API.
 - [ ] Bấm mở link Shopee và kiểm tra bảng `clicks` có record mới.
 
 ## Việc cần làm tiếp cho giai đoạn đối soát hoa hồng
@@ -107,7 +117,9 @@ const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 - Chưa login thì không convert link được.
 - Login Google thành công thì user được nhận diện.
 - Convert link tạo record trong `affiliate_links`.
-- Affiliate URL có đủ `origin_link`, `affiliate_id`, `sub_id`.
+- Edge Function gọi ShopeeCD API với `originalLink`, `affiliateId`, `subId1`.
+- Affiliate URL được lấy từ `results[0].shortLink` hoặc `results[0].longLink`.
+- Lịch sử link hiển thị hoa hồng ước tính và phần trăm rate nếu ShopeeCD API trả dữ liệu.
 - `sub_id` có thể truy ngược về `user_id`.
 - Lịch sử link chỉ hiển thị link của user hiện tại.
 - Click affiliate link tạo record trong `clicks`.

@@ -11,9 +11,27 @@ type ConvertBody = {
   normalized_url?: string;
 };
 
+type ShopeeConvertResult = {
+  originalLink?: string;
+  shortLink?: string;
+  longLink?: string;
+  commission?: string;
+  rate?: string;
+  commission_name?: string;
+  product_image?: string;
+};
+
+type ShopeeConvertResponse = {
+  success?: boolean;
+  results?: ShopeeConvertResult[];
+  message?: string;
+  error?: string;
+};
+
 const affiliateId = Deno.env.get("SHOPEE_AFFILIATE_ID") || "17305840167";
 const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+const shopeeConvertApi = "https://shopeecd.vercel.app/api/public/shopee/convert-link";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -57,7 +75,7 @@ Deno.serve(async (req) => {
 
     const linkId = crypto.randomUUID();
     const subId = buildSubId(user.id, linkId);
-    const affiliateUrl = buildAffiliateUrl(normalizedUrl, subId);
+    const convertedLink = await convertShopeeLink(originalUrl, subId);
 
     await supabase.from("profiles").upsert({
       id: user.id,
@@ -74,16 +92,24 @@ Deno.serve(async (req) => {
         original_url: originalUrl,
         normalized_url: normalizedUrl,
         sub_id: subId,
-        affiliate_url: affiliateUrl,
+        affiliate_url: convertedLink.affiliateUrl,
+        estimated_commission: convertedLink.estimatedCommission,
+        commission_rate: convertedLink.commissionRate,
+        product_name: convertedLink.productName,
+        product_image: convertedLink.productImage,
       })
-      .select("id, sub_id, affiliate_url, normalized_url, created_at")
+      .select("id, sub_id, affiliate_url, normalized_url, estimated_commission, commission_rate, created_at")
       .single();
 
     if (insertError) {
       return json({ error: insertError.message }, 500);
     }
 
-    return json(link, 200);
+    return json({
+      ...link,
+      commission: link.estimated_commission,
+      rate: link.commission_rate,
+    }, 200);
   } catch (error) {
     return json({ error: error instanceof Error ? error.message : "Unknown error" }, 500);
   }
@@ -124,12 +150,46 @@ function compact(value: string) {
   return value.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
 }
 
-function buildAffiliateUrl(originLink: string, subId: string) {
-  const url = new URL("https://s.shopee.vn/an_redir");
-  url.searchParams.set("origin_link", originLink);
-  url.searchParams.set("affiliate_id", affiliateId);
-  url.searchParams.set("sub_id", subId);
-  return url.toString();
+async function convertShopeeLink(originalLink: string, subId: string) {
+  const response = await fetch(shopeeConvertApi, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      originalLink,
+      affiliateId,
+      subId1: subId,
+    }),
+  });
+
+  let payload: ShopeeConvertResponse;
+  try {
+    payload = await response.json();
+  } catch {
+    throw new Error("ShopeeCD API returned an invalid response");
+  }
+
+  if (!response.ok) {
+    throw new Error(payload.error || payload.message || "ShopeeCD API request failed");
+  }
+
+  if (!payload.success || !payload.results?.length) {
+    throw new Error(payload.error || payload.message || "ShopeeCD API did not return a converted link");
+  }
+
+  const result = payload.results[0];
+  const affiliateUrl = sanitizeUrl(result.shortLink || result.longLink);
+
+  if (!affiliateUrl) {
+    throw new Error("ShopeeCD API did not return a valid affiliate link");
+  }
+
+  return {
+    affiliateUrl,
+    estimatedCommission: result.commission || null,
+    commissionRate: result.rate || null,
+    productName: result.commission_name || null,
+    productImage: result.product_image || null,
+  };
 }
 
 function json(payload: unknown, status: number) {

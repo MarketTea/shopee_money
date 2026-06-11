@@ -49,17 +49,6 @@
       <div class="config-warning" id="configWarning">
         Chưa cấu hình Supabase. Hãy thay SUPABASE_URL và SUPABASE_ANON_KEY trong file HTML sau khi tạo project.
       </div>
-      <div class="auth-panel">
-        <div class="auth-copy">
-          <div class="auth-title" id="authTitle">Đăng nhập để nhận hoàn tiền</div>
-          <div class="auth-status" id="authStatus">Mỗi link sẽ được gắn mã tracking riêng theo tài khoản của bạn.</div>
-        </div>
-        <div class="auth-actions">
-          <button class="btn-auth" id="loginBtn" onclick="signInWithGoogle()" type="button">Đăng nhập Google</button>
-          <button class="btn-auth secondary" id="logoutBtn" onclick="signOut()" type="button" style="display:none;">Đăng
-            xuất</button>
-        </div>
-      </div>
       <label for="shopeeLink">🔗 Dán link sản phẩm Shopee của bạn vào đây</label>
       <div class="input-row">
         <div class="input-container">
@@ -87,6 +76,20 @@
           <button class="btn-copy" id="copyBtn" onclick="copyLink()">Sao chép</button>
         </div>
         <p class="result-note">💡 Click vào link trên để ủng hộ nhóm nhé! Giá không đổi 😊</p>
+      </div>
+
+      <!-- end result box -->
+      <!-- auth panel -->
+      <div class="auth-panel">
+        <div class="auth-copy">
+          <div class="auth-title" id="authTitle">Đăng nhập để nhận hoàn tiền</div>
+          <div class="auth-status" id="authStatus">Mỗi link sẽ được gắn mã tracking riêng theo tài khoản của bạn.</div>
+        </div>
+        <div class="auth-actions">
+          <button class="btn-auth" id="loginBtn" onclick="signInWithGoogle()" type="button">Đăng nhập Google</button>
+          <button class="btn-auth secondary" id="logoutBtn" onclick="signOut()" type="button" style="display:none;">Đăng
+            xuất</button>
+        </div>
       </div>
       <div class="history-panel" id="historyPanel">
         <div class="history-head">

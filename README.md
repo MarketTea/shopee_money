@@ -41,9 +41,18 @@ const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 - User đăng nhập Google qua Supabase Auth.
 - Frontend gọi Supabase Edge Function `convert-link`.
 - Function tạo `sub_id` dạng `u_<userShortId>_l_<linkShortId>`.
-- Function lưu mapping vào bảng `affiliate_links`.
-- Frontend hiển thị affiliate URL và lịch sử link của user.
+- Function gọi ShopeeCD API `https://shopeecd.vercel.app/api/public/shopee/convert-link` với `originalLink`, `affiliateId`, `subId1`.
+- Function lưu mapping, affiliate URL, hoa hồng ước tính và rate vào bảng `affiliate_links`.
+- Frontend hiển thị affiliate URL sau khi convert và hiển thị hoa hồng ước tính trong lịch sử link của user.
 - Khi user mở link Shopee, frontend gọi `record-click` để lưu lượt click vào bảng `clicks`.
+
+ShopeeCD API response được dùng từ `results[0]`:
+
+- `shortLink` hoặc `longLink` -> `affiliate_links.affiliate_url`
+- `commission` -> `affiliate_links.estimated_commission`
+- `rate` -> `affiliate_links.commission_rate`
+- `commission_name` -> `affiliate_links.product_name`
+- `product_image` -> `affiliate_links.product_image`
 
 ## Database
 
@@ -60,5 +69,12 @@ Migration `supabase/migrations/202606080001_payout_qr_profiles.sql` thêm:
 - thông tin QR nhận hoàn tiền trong `profiles`
 - private Storage bucket `payout-qr`
 - Storage RLS để user chỉ thao tác file QR của chính mình
+
+Migration `supabase/migrations/202606120001_affiliate_link_estimated_commission.sql` thêm vào `affiliate_links`:
+
+- `estimated_commission`
+- `commission_rate`
+- `product_name`
+- `product_image`
 
 Các bảng đã bật RLS. User chỉ đọc được dữ liệu của chính họ; việc insert link được thực hiện qua Edge Function.

@@ -62,6 +62,18 @@
     gap: 2rem;
   }
 
+  .history-product-top {
+    flex-direction: column;
+  }
+
+  .history-actions {
+    width: 100%;
+  }
+
+  .history-action {
+    flex: 1;
+  }
+
   .cta-card {
     padding: 2rem 1.3rem;
   }

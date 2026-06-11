@@ -203,7 +203,7 @@
   border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 12px;
   padding: 0.85rem;
-  margin-bottom: 1rem;
+  margin-top: 1rem;
 }
 
 .auth-copy {
@@ -442,7 +442,7 @@
 
 .history-list {
   display: grid;
-  gap: 0.55rem;
+  gap: 0.7rem;
 }
 
 .history-empty {
@@ -453,9 +453,10 @@
 
 .history-item {
   background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(216, 226, 238, 0.9);
   border-radius: 10px;
   color: #1A0A05;
-  padding: 0.72rem;
+  padding: 0.85rem;
 }
 
 .history-meta {
@@ -483,6 +484,127 @@
   line-height: 1.35;
   text-decoration: none;
   overflow-wrap: anywhere;
+}
+
+.history-product {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.history-product-img {
+  border-radius: 8px;
+  flex: 0 0 54px;
+  height: 54px;
+  object-fit: cover;
+  width: 54px;
+}
+
+.history-product-img-fallback {
+  align-items: center;
+  background: #ffe8dc;
+  color: var(--orange);
+  display: flex;
+  font-size: 0.78rem;
+  font-weight: 800;
+  justify-content: center;
+}
+
+.history-product-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.history-product-top {
+  align-items: flex-start;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+
+.history-product-name {
+  color: #334155;
+  display: -webkit-box;
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1.35;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.history-short-url {
+  color: #94a3b8;
+  font-family: monospace;
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-top: 0.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.5rem;
+}
+
+.history-action {
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1;
+  min-height: 34px;
+  padding: 0.55rem 0.75rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.history-copy {
+  background: #ff711f;
+  box-shadow: 0 2px 6px rgba(255, 113, 31, 0.22);
+  color: #fff;
+}
+
+.history-copy.copied {
+  background: #16a34a;
+}
+
+.history-buy {
+  background: #2563eb;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+  color: #fff;
+}
+
+.history-commission {
+  align-items: center;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 0.75rem;
+  padding-top: 0.65rem;
+}
+
+.history-commission-text {
+  color: #ea580c;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.history-rate {
+  background: #dcfce7;
+  border-radius: 7px;
+  color: #15803d;
+  font-size: 0.84rem;
+  font-weight: 900;
+  padding: 0.25rem 0.5rem;
 }
 
 .config-warning {
@@ -544,4 +666,3 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
-

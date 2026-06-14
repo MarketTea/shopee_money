@@ -107,6 +107,7 @@ Deno.serve(async (req) => {
 
     return json({
       ...link,
+      affiliate_id: affiliateId,
       commission: link.estimated_commission,
       rate: link.commission_rate,
     }, 200);
@@ -177,7 +178,7 @@ async function convertShopeeLink(originalLink: string, subId: string) {
   }
 
   const result = payload.results[0];
-  const affiliateUrl = sanitizeUrl(result.shortLink || result.longLink);
+  const affiliateUrl = buildVerifiedAffiliateUrl(result.longLink || result.shortLink, originalLink, subId);
 
   if (!affiliateUrl) {
     throw new Error("ShopeeCD API did not return a valid affiliate link");
@@ -190,6 +191,37 @@ async function convertShopeeLink(originalLink: string, subId: string) {
     productName: result.commission_name || null,
     productImage: result.product_image || null,
   };
+}
+
+function buildVerifiedAffiliateUrl(value: string | undefined, originalLink: string, subId: string) {
+  const affiliateUrl = sanitizeUrl(value);
+  if (!affiliateUrl) return "";
+
+  try {
+    const parsed = new URL(affiliateUrl);
+    const hostname = parsed.hostname.toLowerCase();
+    const isShopeeRedirect = hostname === "s.shopee.vn" && parsed.pathname === "/an_redir";
+
+    if (!isShopeeRedirect) {
+      throw new Error("ShopeeCD API returned an affiliate link that cannot be verified");
+    }
+
+    if (!parsed.searchParams.get("origin_link")) {
+      parsed.searchParams.set("origin_link", originalLink);
+    }
+
+    parsed.searchParams.set("affiliate_id", affiliateId);
+    parsed.searchParams.set("sub_id", subId);
+
+    if (parsed.searchParams.get("affiliate_id") !== affiliateId || parsed.searchParams.get("sub_id") !== subId) {
+      throw new Error("Affiliate tracking verification failed");
+    }
+
+    return parsed.toString();
+  } catch (error) {
+    if (error instanceof Error) throw error;
+    return "";
+  }
 }
 
 function json(payload: unknown, status: number) {

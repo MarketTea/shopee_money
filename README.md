@@ -43,6 +43,7 @@ const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 - Function tạo `sub_id` dạng `u_<userShortId>_l_<linkShortId>`.
 - Function gọi ShopeeCD API `https://shopeecd.vercel.app/api/public/shopee/convert-link` với `originalLink`, `affiliateId`, `subId1`.
 - Function lưu mapping, affiliate URL, hoa hồng ước tính và rate vào bảng `affiliate_links`.
+- Function luôn xác minh và ép `affiliate_url` về `affiliate_id` cấu hình trong `SHOPEE_AFFILIATE_ID` và `sub_id` do hệ thống tạo trước khi lưu DB.
 - Frontend hiển thị affiliate URL sau khi convert và hiển thị hoa hồng ước tính trong lịch sử link của user.
 - Khi user mở link Shopee, frontend gọi `record-click` để lưu lượt click vào bảng `clicks`.
 

@@ -32,6 +32,7 @@ Nâng cấp landing page chuyển link Shopee từ bản HTML tĩnh sang hệ th
   - `commission_ledger`
 - RLS đã bật để user chỉ đọc được dữ liệu của chính họ.
 - Edge Function `convert-link` đã tạo và lưu affiliate link, hoa hồng ước tính và rate từ ShopeeCD API.
+- Edge Function `convert-link` ép `affiliate_url` về đúng `SHOPEE_AFFILIATE_ID` và `sub_id` nội bộ trước khi lưu để tránh attribution sang affiliate khác.
 - Edge Function `record-click` đã tạo để lưu click.
 
 ## ShopeeCD API response đang dùng

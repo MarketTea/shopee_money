@@ -607,6 +607,95 @@
   padding: 0.25rem 0.5rem;
 }
 
+.history-orders-empty {
+  border-top: 1px solid #e2e8f0;
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-top: 0.7rem;
+  padding-top: 0.65rem;
+}
+
+.history-orders {
+  border-top: 1px solid #e2e8f0;
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.7rem;
+  padding-top: 0.65rem;
+}
+
+.history-order {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.65rem;
+}
+
+.history-order-head {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: space-between;
+  margin-bottom: 0.35rem;
+}
+
+.history-order-id {
+  color: #334155;
+  font-family: monospace;
+  font-size: 0.76rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.history-order-status {
+  border-radius: 999px;
+  flex: 0 0 auto;
+  font-size: 0.68rem;
+  font-weight: 900;
+  padding: 0.2rem 0.45rem;
+}
+
+.history-order-status.is-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.history-order-status.is-approved {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.history-order-status.is-paid {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.history-order-status.is-rejected {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.history-order-name {
+  color: #475569;
+  display: -webkit-box;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.35;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.history-order-grid {
+  color: #64748b;
+  display: grid;
+  font-size: 0.72rem;
+  gap: 0.25rem 0.65rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  line-height: 1.35;
+  margin-top: 0.45rem;
+}
+
 .config-warning {
   display: none;
   background: rgba(255, 255, 255, 0.16);

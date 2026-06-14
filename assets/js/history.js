@@ -16,7 +16,14 @@ async function loadLinkHistory() {
     return;
   }
 
-  renderHistory(data || []);
+  const links = data || [];
+  const subIds = links.map(link => link.sub_id).filter(Boolean);
+  const ordersBySubId = await loadOrdersBySubId(subIds);
+
+  renderHistory(links.map(link => ({
+    ...link,
+    orders: ordersBySubId.get(link.sub_id) || []
+  })));
 }
 
 async function trackAffiliateClick(affiliateLinkId) {
@@ -29,6 +36,29 @@ async function trackAffiliateClick(affiliateLinkId) {
   } catch (error) {
     console.warn('Could not record click:', error);
   }
+}
+
+async function loadOrdersBySubId(subIds) {
+  const ordersBySubId = new Map();
+  if (!subIds.length) return ordersBySubId;
+
+  const { data, error } = await supabaseClient
+    .from('orders')
+    .select('id, shopee_order_id, sub_id, item_name, commission, net_commission, commission_rate, status, purchase_time, completed_at')
+    .in('sub_id', subIds)
+    .order('purchase_time', { ascending: false });
+
+  if (error) {
+    console.warn('Could not load orders for history:', error);
+    return ordersBySubId;
+  }
+
+  (data || []).forEach(order => {
+    if (!ordersBySubId.has(order.sub_id)) ordersBySubId.set(order.sub_id, []);
+    ordersBySubId.get(order.sub_id).push(order);
+  });
+
+  return ordersBySubId;
 }
 
 function renderHistory(links) {
@@ -50,6 +80,7 @@ function renderHistory(links) {
     const productName = escapeHtml(link.product_name || 'Sản phẩm Shopee');
     const productImage = escapeHtml(link.product_image || '');
     const shortUrl = escapeHtml(formatShortUrl(link.affiliate_url));
+    const orderMarkup = renderHistoryOrders(link.orders || []);
     const imageMarkup = productImage
       ? `<img class="history-product-img" src="${productImage}" alt="${productName}" loading="lazy">`
       : `<div class="history-product-img history-product-img-fallback">SP</div>`;
@@ -77,11 +108,64 @@ function renderHistory(links) {
               <span class="history-commission-text">🌸 Hoa hồng ước tính: ${commission}</span>
               <span class="history-rate">${rate}%</span>
             </div>
+            ${orderMarkup}
           </div>
         </div>
       </div>
     `;
   }).join('');
+}
+
+function renderHistoryOrders(orders) {
+  if (!orders.length) {
+    return '<div class="history-orders-empty">Chưa ghi nhận đơn hàng</div>';
+  }
+
+  return `
+    <div class="history-orders">
+      ${orders.map(order => {
+        const status = getOrderStatusMeta(order.status);
+        const purchaseTime = order.purchase_time
+          ? new Date(order.purchase_time).toLocaleString('vi-VN')
+          : '--';
+        const netCommission = formatCurrency(order.net_commission);
+        const grossCommission = formatCurrency(order.commission);
+        const rate = order.commission_rate == null ? '--' : `${Number(order.commission_rate).toFixed(2)}%`;
+
+        return `
+          <div class="history-order">
+            <div class="history-order-head">
+              <span class="history-order-id">#${escapeHtml(order.shopee_order_id)}</span>
+              <span class="history-order-status ${status.className}">${status.label}</span>
+            </div>
+            <div class="history-order-name">${escapeHtml(order.item_name || 'Đơn Shopee')}</div>
+            <div class="history-order-grid">
+              <span>Mua: ${escapeHtml(purchaseTime)}</span>
+              <span>Rate: ${escapeHtml(rate)}</span>
+              <span>Hoa hồng ròng: ${escapeHtml(netCommission)}</span>
+              <span>Tổng HH: ${escapeHtml(grossCommission)}</span>
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function getOrderStatusMeta(status) {
+  const map = {
+    pending: { label: 'Đang chờ xử lý', className: 'is-pending' },
+    approved: { label: 'Chưa thanh toán', className: 'is-approved' },
+    paid: { label: 'Đã hoàn thành', className: 'is-paid' },
+    rejected: { label: 'Đã huỷ', className: 'is-rejected' }
+  };
+
+  return map[status] || { label: status || 'Không rõ', className: 'is-pending' };
+}
+
+function formatCurrency(value) {
+  const number = Number(value || 0);
+  return `${number.toLocaleString('vi-VN', { maximumFractionDigits: 2 })}đ`;
 }
 
 function formatShortUrl(url) {

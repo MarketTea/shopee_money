@@ -74,6 +74,15 @@
     flex: 1;
   }
 
+  .history-order-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .history-order-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
   .cta-card {
     padding: 2rem 1.3rem;
   }

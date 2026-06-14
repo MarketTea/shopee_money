@@ -79,3 +79,15 @@ Migration `supabase/migrations/202606120001_affiliate_link_estimated_commission.
 - `product_image`
 
 Các bảng đã bật RLS. User chỉ đọc được dữ liệu của chính họ; việc insert link được thực hiện qua Edge Function.
+
+## Import Shopee conversion CSV
+
+Export CSV từ Shopee Affiliate `conversion_report`, sau đó chạy bằng service role key:
+
+```bash
+SUPABASE_URL='https://YOUR_PROJECT_REF.supabase.co' \
+SUPABASE_SERVICE_ROLE_KEY='YOUR_SERVICE_ROLE_KEY' \
+node scripts/import-shopee-conversions.mjs /path/AffiliateCommissionReport.csv
+```
+
+Script sẽ lưu raw CSV vào `shopee_conversion_rows`, match `Sub_id1` với `affiliate_links.sub_id`, rồi upsert `orders` và `commission_ledger` cho các dòng match được user.

@@ -42,7 +42,6 @@ function updateAuthUi() {
   const authStatus = document.getElementById('authStatus');
   const loginBtn = document.getElementById('loginBtn');
   const logoutBtn = document.getElementById('logoutBtn');
-  const historyPanel = document.getElementById('historyPanel');
 
   if (currentUser) {
     const displayName = currentUser.user_metadata?.full_name || currentUser.email || 'Tài khoản Google';
@@ -50,7 +49,6 @@ function updateAuthUi() {
     authStatus.textContent = 'Bạn đã sẵn sàng tạo link có tracking để đối soát hoa hồng.';
     loginBtn.style.display = 'none';
     logoutBtn.style.display = 'inline-flex';
-    historyPanel.classList.add('show');
     return;
   }
 
@@ -58,7 +56,6 @@ function updateAuthUi() {
   authStatus.textContent = 'Mỗi link sẽ được gắn mã tracking riêng theo tài khoản của bạn.';
   loginBtn.style.display = 'inline-flex';
   logoutBtn.style.display = 'none';
-  historyPanel.classList.remove('show');
 }
 
 async function signInWithGoogle() {

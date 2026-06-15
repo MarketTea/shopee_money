@@ -1,4 +1,4 @@
-# landing-sp-ref
+# landing-sp-ref python3 -m http.server 8000
 
 Landing page chuyển link Shopee Affiliate, đã thêm bản v1 tracking user bằng Supabase.
 
@@ -16,20 +16,20 @@ supabase link --project-ref YOUR_PROJECT_REF
 supabase db push
 ```
 
-5. Deploy Edge Function:
+1. Deploy Edge Function:
 
 ```bash
 supabase functions deploy convert-link
 supabase functions deploy record-click
 ```
 
-6. Set secret cho Edge Function:
+1. Set secret cho Edge Function:
 
 ```bash
 supabase secrets set SHOPEE_AFFILIATE_ID=17305840167
 ```
 
-7. Mở `index.html` và thay:
+1. Mở `index.html` và thay:
 
 ```js
 const SUPABASE_URL = 'https://YOUR_PROJECT_REF.supabase.co';

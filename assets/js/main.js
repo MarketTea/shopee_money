@@ -21,3 +21,51 @@ if (document.readyState === 'interactive' || document.readyState === 'complete')
   initReferralCode();
   initAuth();
 }
+
+function switchConverterTab(tabName) {
+  const tabBtnConvert = document.getElementById('tabBtnConvert');
+  const tabBtnHistory = document.getElementById('tabBtnHistory');
+  const tabBtnPayout = document.getElementById('tabBtnPayout');
+  const tabContentConvert = document.getElementById('tabContentConvert');
+  const tabContentHistory = document.getElementById('tabContentHistory');
+  const tabContentPayout = document.getElementById('tabContentPayout');
+
+  if (!tabBtnConvert || !tabBtnHistory || !tabBtnPayout || !tabContentConvert || !tabContentHistory || !tabContentPayout) return;
+
+  // Reset active classes
+  tabBtnConvert.classList.remove('active');
+  tabBtnHistory.classList.remove('active');
+  tabBtnPayout.classList.remove('active');
+  tabContentConvert.classList.remove('active');
+  tabContentHistory.classList.remove('active');
+  tabContentPayout.classList.remove('active');
+
+  if (tabName === 'convert') {
+    tabBtnConvert.classList.add('active');
+    tabContentConvert.classList.add('active');
+  } else if (tabName === 'history') {
+    tabBtnHistory.classList.add('active');
+    tabContentHistory.classList.add('active');
+
+    // Automatically load history when clicking the tab if user is logged in
+    if (typeof loadLinkHistory === 'function' && currentUser) {
+      loadLinkHistory();
+    }
+  } else if (tabName === 'payout') {
+    tabBtnPayout.classList.add('active');
+    tabContentPayout.classList.add('active');
+
+    // Automatically load payout profile when clicking the tab if user is logged in
+    if (typeof loadPayoutProfile === 'function' && currentUser) {
+      loadPayoutProfile();
+    }
+  }
+}
+
+function navigateToTab(tabName) {
+  const target = document.getElementById('convert');
+  if (target) {
+    target.scrollIntoView({ behavior: 'smooth' });
+  }
+  switchConverterTab(tabName);
+}

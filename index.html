@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -30,9 +30,9 @@
         onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">Tính năng</a>
       <a href="javascript:void(0)" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">Cách
         hoạt động</a>
-      <a href="javascript:void(0)" onclick="document.getElementById('payout').scrollIntoView({behavior:'smooth'})">QR
+      <a href="javascript:void(0)" onclick="navigateToTab('payout')">QR
         nhận tiền</a>
-      <a href="javascript:void(0)" onclick="document.getElementById('convert').scrollIntoView({behavior:'smooth'})"
+      <a href="javascript:void(0)" onclick="navigateToTab('convert')"
         class="nav-cta">Chuyển Link</a>
     </nav>
   </header>
@@ -49,33 +49,99 @@
       <div class="config-warning" id="configWarning">
         Chưa cấu hình Supabase. Hãy thay SUPABASE_URL và SUPABASE_ANON_KEY trong file HTML sau khi tạo project.
       </div>
-      <label for="shopeeLink">🔗 Dán link sản phẩm Shopee của bạn vào đây</label>
-      <div class="input-row">
-        <div class="input-container">
-          <input type="url" id="shopeeLink" class="link-input" placeholder="shope.ee/..." autocomplete="off"
-            autocorrect="off" spellcheck="false" />
-          <button class="btn-paste" id="pasteBtn" onclick="pasteLink()" type="button" title="Dán link từ clipboard">
-            📋 Dán
+      <!-- Tab Buttons -->
+      <div class="converter-tabs">
+        <button class="tab-btn active" id="tabBtnConvert" onclick="switchConverterTab('convert')" type="button">Chuyển Link</button>
+        <button class="tab-btn" id="tabBtnHistory" onclick="switchConverterTab('history')" type="button">Lịch sử Link</button>
+        <button class="tab-btn" id="tabBtnPayout" onclick="switchConverterTab('payout')" type="button">QR Nhận Tiền</button>
+      </div>
+
+      <!-- Tab Content: Convert -->
+      <div class="tab-content active" id="tabContentConvert">
+        <label for="shopeeLink">🔗 Dán link sản phẩm Shopee của bạn vào đây</label>
+        <div class="input-row">
+          <div class="input-container">
+            <input type="url" id="shopeeLink" class="link-input" placeholder="shope.ee/..." autocomplete="off"
+              autocorrect="off" spellcheck="false" />
+            <button class="btn-paste" id="pasteBtn" onclick="pasteLink()" type="button" title="Dán link từ clipboard">
+              📋 Dán
+            </button>
+          </div>
+          <button class="btn-convert" id="convertBtn" onclick="convertLink()">
+            <span id="btnLabel">Chuyển Link</span>
+            <div class="spinner" id="spinner"></div>
           </button>
         </div>
-        <button class="btn-convert" id="convertBtn" onclick="convertLink()">
-          <span id="btnLabel">Chuyển Link</span>
-          <div class="spinner" id="spinner"></div>
-        </button>
-      </div>
-      <div class="error-msg" id="errorMsg"></div>
-      <div class="result-box" id="resultBox">
-        <div class="result-label">🔗 Link mua hàng qua affiliate</div>
-        <a href="#" id="shopeeOpenBtn" class="btn-open-shopee" target="_blank" rel="noopener">
-          <span class="shop-icon">🛒</span>
-          Bấm để mở link Shopee
-        </a>
-        <div class="result-divider"><span>hoặc copy link để chia sẻ</span></div>
-        <div class="result-link-row">
-          <div class="result-link" id="resultLink"></div>
-          <button class="btn-copy" id="copyBtn" onclick="copyLink()">Sao chép</button>
+        <div class="error-msg" id="errorMsg"></div>
+        <div class="result-box" id="resultBox">
+          <div class="result-label">🔗 Link mua hàng qua affiliate</div>
+          <a href="#" id="shopeeOpenBtn" class="btn-open-shopee" target="_blank" rel="noopener">
+            <span class="shop-icon">🛒</span>
+            Bấm để mở link Shopee
+          </a>
+          <div class="result-divider"><span>hoặc copy link để chia sẻ</span></div>
+          <div class="result-link-row">
+            <div class="result-link" id="resultLink"></div>
+            <button class="btn-copy" id="copyBtn" onclick="copyLink()">Sao chép</button>
+          </div>
+          <p class="result-note">💡 Click vào link trên để ủng hộ nhóm nhé! Giá không đổi 😊</p>
         </div>
-        <p class="result-note">💡 Click vào link trên để ủng hộ nhóm nhé! Giá không đổi 😊</p>
+      </div>
+
+      <!-- Tab Content: History -->
+      <div class="tab-content" id="tabContentHistory">
+        <div class="history-panel" id="historyPanel">
+          <div class="history-head">
+            <div class="history-title">Lịch sử link của bạn</div>
+            <button class="history-refresh" onclick="loadLinkHistory()" type="button">Làm mới</button>
+          </div>
+          <div class="history-list" id="historyList">
+            <div class="history-empty">Đăng nhập để xem các link đã chuyển đổi.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content: Payout QR -->
+      <div class="tab-content" id="tabContentPayout">
+        <div class="payout-panel" id="payoutPanel">
+          <div class="payout-locked" id="payoutLoggedOut">
+            <div>
+              <div class="payout-lock-title">Đăng nhập để thêm mã QR</div>
+              <p>Thông tin nhận tiền được gắn với tài khoản Google của bạn.</p>
+            </div>
+            <button class="btn-auth" onclick="signInWithGoogle()" type="button">Đăng nhập Google</button>
+          </div>
+
+          <form class="payout-form" id="payoutForm" onsubmit="savePayoutQr(event)">
+            <div class="payout-grid">
+              <div class="payout-fields">
+                <label for="payoutRecipientName">Tên người nhận</label>
+                <input type="text" id="payoutRecipientName" class="payout-input" placeholder="Ví dụ: Nguyễn Văn A"
+                  autocomplete="name" maxlength="120" />
+
+                <label for="payoutQrInput">Ảnh mã QR ngân hàng hoặc ví</label>
+                <input type="file" id="payoutQrInput" class="payout-file" accept="image/png,image/jpeg,image/webp"
+                  onchange="handlePayoutQrSelected(event)" />
+                <div class="payout-help">Chấp nhận PNG, JPG, JPEG, WEBP. Dung lượng tối đa 2MB.</div>
+                <div class="payout-file-name" id="payoutFileName"></div>
+              </div>
+
+              <div class="payout-preview">
+                <img id="payoutQrPreview" alt="Mã QR nhận hoàn tiền" />
+                <div class="payout-preview-empty" id="payoutQrEmpty">Chưa có mã QR</div>
+              </div>
+            </div>
+
+            <div class="payout-actions">
+              <button class="btn-convert" id="payoutSaveBtn" type="submit">
+                <span id="payoutSaveLabel">Lưu thông tin nhận tiền</span>
+                <div class="spinner" id="payoutSpinner"></div>
+              </button>
+              <div class="payout-uploaded-at" id="payoutUploadedAt"></div>
+            </div>
+            <div class="payout-status" id="payoutStatus"></div>
+          </form>
+        </div>
       </div>
 
       <!-- end result box -->
@@ -89,15 +155,6 @@
           <button class="btn-auth" id="loginBtn" onclick="signInWithGoogle()" type="button">Đăng nhập Google</button>
           <button class="btn-auth secondary" id="logoutBtn" onclick="signOut()" type="button" style="display:none;">Đăng
             xuất</button>
-        </div>
-      </div>
-      <div class="history-panel" id="historyPanel">
-        <div class="history-head">
-          <div class="history-title">Lịch sử link của bạn</div>
-          <button class="history-refresh" onclick="loadLinkHistory()" type="button">Làm mới</button>
-        </div>
-        <div class="history-list" id="historyList">
-          <div class="history-empty">Đăng nhập để xem các link đã chuyển đổi.</div>
         </div>
       </div>
     </div>
@@ -118,55 +175,6 @@
     </div>
   </section>
 
-  <!-- PAYOUT QR -->
-  <section class="payout-section" id="payout">
-    <div class="payout-header reveal">
-      <p class="section-label">Thông tin nhận hoàn tiền</p>
-      <h2 class="section-title">Tải mã QR nhận chuyển khoản</h2>
-      <p class="section-sub">Khi đơn hàng được xác nhận hợp lệ, admin sẽ dùng thông tin này để chuyển khoản hoàn tiền
-        cho bạn.</p>
-    </div>
-
-    <div class="payout-panel reveal">
-      <div class="payout-locked" id="payoutLoggedOut">
-        <div>
-          <div class="payout-lock-title">Đăng nhập để thêm mã QR</div>
-          <p>Thông tin nhận tiền được gắn với tài khoản Google của bạn.</p>
-        </div>
-        <button class="btn-auth" onclick="signInWithGoogle()" type="button">Đăng nhập Google</button>
-      </div>
-
-      <form class="payout-form" id="payoutForm" onsubmit="savePayoutQr(event)">
-        <div class="payout-grid">
-          <div class="payout-fields">
-            <label for="payoutRecipientName">Tên người nhận</label>
-            <input type="text" id="payoutRecipientName" class="payout-input" placeholder="Ví dụ: Nguyễn Văn A"
-              autocomplete="name" maxlength="120" />
-
-            <label for="payoutQrInput">Ảnh mã QR ngân hàng hoặc ví</label>
-            <input type="file" id="payoutQrInput" class="payout-file" accept="image/png,image/jpeg,image/webp"
-              onchange="handlePayoutQrSelected(event)" />
-            <div class="payout-help">Chấp nhận PNG, JPG, JPEG, WEBP. Dung lượng tối đa 2MB.</div>
-            <div class="payout-file-name" id="payoutFileName"></div>
-          </div>
-
-          <div class="payout-preview">
-            <img id="payoutQrPreview" alt="Mã QR nhận hoàn tiền" />
-            <div class="payout-preview-empty" id="payoutQrEmpty">Chưa có mã QR</div>
-          </div>
-        </div>
-
-        <div class="payout-actions">
-          <button class="btn-convert" id="payoutSaveBtn" type="submit">
-            <span id="payoutSaveLabel">Lưu thông tin nhận tiền</span>
-            <div class="spinner" id="payoutSpinner"></div>
-          </button>
-          <div class="payout-uploaded-at" id="payoutUploadedAt"></div>
-        </div>
-        <div class="payout-status" id="payoutStatus"></div>
-      </form>
-    </div>
-  </section>
 
   <!-- FEATURES -->
   <section class="features" id="features">

@@ -65,6 +65,11 @@ function renderHistory(links) {
   const historyList = document.getElementById('historyList');
   if (!historyList) return;
 
+  if (!currentUser) {
+    historyList.innerHTML = '<div class="history-empty">Đăng nhập để xem các link đã chuyển đổi.</div>';
+    return;
+  }
+
   if (!links.length) {
     historyList.innerHTML = '<div class="history-empty">Bạn chưa tạo link nào.</div>';
     return;

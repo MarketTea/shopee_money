@@ -38,19 +38,21 @@ function setCurrentUser(user) {
 }
 
 function updateAuthUi() {
+  const authPanel = document.querySelector('.auth-panel');
   const authTitle = document.getElementById('authTitle');
   const authStatus = document.getElementById('authStatus');
   const loginBtn = document.getElementById('loginBtn');
   const logoutBtn = document.getElementById('logoutBtn');
+  const footerLogoutBtn = document.getElementById('footerLogoutBtn');
 
   if (currentUser) {
-    const displayName = currentUser.user_metadata?.full_name || currentUser.email || 'Tài khoản Google';
-    authTitle.textContent = `Xin chào, ${displayName}`;
-    authStatus.textContent = 'Bạn đã sẵn sàng tạo link có tracking để đối soát hoa hồng.';
-    loginBtn.style.display = 'none';
-    logoutBtn.style.display = 'inline-flex';
+    if (authPanel) authPanel.style.display = 'none';
+    if (footerLogoutBtn) footerLogoutBtn.style.display = 'inline-block';
     return;
   }
+
+  if (authPanel) authPanel.style.display = 'flex';
+  if (footerLogoutBtn) footerLogoutBtn.style.display = 'none';
 
   authTitle.textContent = 'Đăng nhập để nhận hoàn tiền';
   authStatus.textContent = 'Mỗi link sẽ được gắn mã tracking riêng theo tài khoản của bạn.';

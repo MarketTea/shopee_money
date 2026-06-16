@@ -106,54 +106,180 @@
 }
 
 .steps {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 1.4rem;
-  margin-top: 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  position: relative;
+  gap: 1rem;
+  margin-top: 3.5rem;
+}
+
+/* Connection line between steps */
+.steps::before {
+  content: '';
+  position: absolute;
+  top: 36px;
+  left: 50px;
+  right: 50px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.12);
+  z-index: 1;
+}
+
+/* Animated active progress line overlay */
+.steps::after {
+  content: '';
+  position: absolute;
+  top: 36px;
+  left: 50px;
+  width: 0%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--yellow), var(--orange));
+  z-index: 1;
+  animation: progressPulse 8s infinite ease-in-out;
+}
+
+@keyframes progressPulse {
+  0% {
+    width: 0%;
+  }
+  30% {
+    width: 33.33%;
+  }
+  60% {
+    width: 66.66%;
+  }
+  90%, 100% {
+    width: 100%;
+  }
 }
 
 .step {
   text-align: center;
-  padding: 2rem 1.5rem;
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius);
+  flex: 1;
+  position: relative;
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 1.4rem 1rem;
   backdrop-filter: blur(10px);
-  transition: transform 0.25s;
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 .step:hover {
-  transform: translateY(-3px);
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
 
 .step-num {
-  width: 50px;
-  height: 50px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  background: var(--yellow);
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-weight: 700;
-  font-size: 1.05rem;
-  color: #1A0A05;
-  margin: 0 auto 1.1rem;
+  font-size: 0.95rem;
+  color: #fff;
+  margin: 0 auto 1rem;
+  position: relative;
+  transition: all 0.3s;
 }
 
 .step h4 {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  font-size: 1rem;
+  font-size: 0.92rem;
   font-weight: 600;
-  margin-bottom: 0.5rem;
-  color: #fff;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  transition: color 0.3s;
 }
 
-.step p {
-  font-size: 0.86rem;
-  color: rgba(255, 255, 255, 0.68);
-  line-height: 1.65;
-  font-weight: 300;
+/* Sequential animation highlight for active state */
+.step:nth-child(1) { animation: activeStep1 8s infinite; }
+.step:nth-child(2) { animation: activeStep2 8s infinite; }
+.step:nth-child(3) { animation: activeStep3 8s infinite; }
+.step:nth-child(4) { animation: activeStep4 8s infinite; }
+
+@keyframes activeStep1 {
+  0%, 25% {
+    border-color: var(--yellow);
+    background: rgba(255, 255, 255, 0.12);
+  }
+  26%, 100% {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+}
+@keyframes activeStep2 {
+  30%, 55% {
+    border-color: var(--yellow);
+    background: rgba(255, 255, 255, 0.12);
+  }
+  0%, 29%, 56%, 100% {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+}
+@keyframes activeStep3 {
+  60%, 85% {
+    border-color: var(--yellow);
+    background: rgba(255, 255, 255, 0.12);
+  }
+  0%, 59%, 86%, 100% {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+}
+@keyframes activeStep4 {
+  90%, 100% {
+    border-color: var(--yellow);
+    background: rgba(255, 255, 255, 0.12);
+  }
+  0%, 89% {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Step Number Active Highlights matching the keyframes */
+.step:nth-child(1) .step-num { animation: activeNum1 8s infinite; }
+.step:nth-child(2) .step-num { animation: activeNum2 8s infinite; }
+.step:nth-child(3) .step-num { animation: activeNum3 8s infinite; }
+.step:nth-child(4) .step-num { animation: activeNum4 8s infinite; }
+
+@keyframes activeNum1 {
+  0%, 25% { background: var(--yellow); color: #1A0A05; border-color: var(--yellow); box-shadow: 0 0 15px rgba(245, 166, 35, 0.4); }
+  26%, 100% { background: rgba(255, 255, 255, 0.1); color: #fff; border-color: rgba(255, 255, 255, 0.2); }
+}
+@keyframes activeNum2 {
+  30%, 55% { background: var(--yellow); color: #1A0A05; border-color: var(--yellow); box-shadow: 0 0 15px rgba(245, 166, 35, 0.4); }
+  0%, 29%, 56%, 100% { background: rgba(255, 255, 255, 0.1); color: #fff; border-color: rgba(255, 255, 255, 0.2); }
+}
+@keyframes activeNum3 {
+  60%, 85% { background: var(--yellow); color: #1A0A05; border-color: var(--yellow); box-shadow: 0 0 15px rgba(245, 166, 35, 0.4); }
+  0%, 59%, 86%, 100% { background: rgba(255, 255, 255, 0.1); color: #fff; border-color: rgba(255, 255, 255, 0.2); }
+}
+@keyframes activeNum4 {
+  90%, 100% { background: var(--yellow); color: #1A0A05; border-color: var(--yellow); box-shadow: 0 0 15px rgba(245, 166, 35, 0.4); }
+  0%, 89% { background: rgba(255, 255, 255, 0.1); color: #fff; border-color: rgba(255, 255, 255, 0.2); }
+}
+
+@media (max-width: 768px) {
+  .steps {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .steps::before,
+  .steps::after {
+    display: none;
+  }
+  .step {
+    width: 100%;
+  }
 }
 
 /* ── TESTIMONIALS ── */

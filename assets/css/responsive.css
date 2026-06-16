@@ -45,6 +45,15 @@
     grid-template-columns: 1fr;
   }
 
+  .payout-dashboard-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .payout-qr-card {
+    max-width: 220px;
+    margin: 0 auto;
+  }
+
   .payout-preview {
     max-width: 260px;
   }

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -32,8 +32,7 @@
         hoạt động</a>
       <a href="javascript:void(0)" onclick="navigateToTab('payout')">QR
         nhận tiền</a>
-      <a href="javascript:void(0)" onclick="navigateToTab('convert')"
-        class="nav-cta">Chuyển Link</a>
+      <a href="javascript:void(0)" onclick="navigateToTab('convert')" class="nav-cta">Chuyển Link</a>
     </nav>
   </header>
 
@@ -51,9 +50,12 @@
       </div>
       <!-- Tab Buttons -->
       <div class="converter-tabs">
-        <button class="tab-btn active" id="tabBtnConvert" onclick="switchConverterTab('convert')" type="button">Chuyển Link</button>
-        <button class="tab-btn" id="tabBtnHistory" onclick="switchConverterTab('history')" type="button">Lịch sử Link</button>
-        <button class="tab-btn" id="tabBtnPayout" onclick="switchConverterTab('payout')" type="button">QR Nhận Tiền</button>
+        <button class="tab-btn active" id="tabBtnConvert" onclick="switchConverterTab('convert')" type="button">Chuyển
+          Link</button>
+        <button class="tab-btn" id="tabBtnHistory" onclick="switchConverterTab('history')" type="button">Lịch sử
+          Link</button>
+        <button class="tab-btn" id="tabBtnPayout" onclick="switchConverterTab('payout')" type="button">Hoàn
+          tiền</button>
       </div>
 
       <!-- Tab Content: Convert -->
@@ -104,6 +106,7 @@
       <!-- Tab Content: Payout QR -->
       <div class="tab-content" id="tabContentPayout">
         <div class="payout-panel" id="payoutPanel">
+          <!-- Logged Out State -->
           <div class="payout-locked" id="payoutLoggedOut">
             <div>
               <div class="payout-lock-title">Đăng nhập để thêm mã QR</div>
@@ -112,35 +115,43 @@
             <button class="btn-auth" onclick="signInWithGoogle()" type="button">Đăng nhập Google</button>
           </div>
 
-          <form class="payout-form" id="payoutForm" onsubmit="savePayoutQr(event)">
-            <div class="payout-grid">
-              <div class="payout-fields">
-                <label for="payoutRecipientName">Tên người nhận</label>
-                <input type="text" id="payoutRecipientName" class="payout-input" placeholder="Ví dụ: Nguyễn Văn A"
-                  autocomplete="name" maxlength="120" />
+          <!-- Logged In: Not Setup QR State -->
+          <div id="payoutSetupPrompt" class="payout-setup-prompt"
+            style="display:none; justify-content: center; align-items: center; padding: 2.5rem 1rem;">
+            <button class="btn-convert" onclick="openPayoutModal()" type="button"
+              style="padding: 0.9rem 2rem; font-size: 1rem; box-shadow: 0 4px 20px rgba(245, 166, 35, 0.35);">
+              🏦 Thêm tài khoản ngân hàng
+            </button>
+          </div>
 
-                <label for="payoutQrInput">Ảnh mã QR ngân hàng hoặc ví</label>
-                <input type="file" id="payoutQrInput" class="payout-file" accept="image/png,image/jpeg,image/webp"
-                  onchange="handlePayoutQrSelected(event)" />
-                <div class="payout-help">Chấp nhận PNG, JPG, JPEG, WEBP. Dung lượng tối đa 2MB.</div>
-                <div class="payout-file-name" id="payoutFileName"></div>
+          <!-- Logged In: Dashboard State -->
+          <div id="payoutDashboard" class="payout-dashboard" style="display:none;">
+            <div class="payout-dashboard-layout">
+              <div class="payout-left">
+                <div class="payout-summary-card">
+                  <div class="summary-label">🌸 Tổng hoa hồng ước tính nhận được</div>
+                  <div class="summary-amount" id="payoutEstimatedTotal">0đ</div>
+                </div>
+
+                <div class="payout-orders-section">
+                  <div class="orders-header">Chi tiết đơn hàng nhận hoàn tiền</div>
+                  <div class="payout-orders-list" id="payoutOrdersList">
+                    <!-- Dynamic rendering -->
+                  </div>
+                </div>
               </div>
 
-              <div class="payout-preview">
-                <img id="payoutQrPreview" alt="Mã QR nhận hoàn tiền" />
-                <div class="payout-preview-empty" id="payoutQrEmpty">Chưa có mã QR</div>
+              <div class="payout-right">
+                <div class="payout-qr-card">
+                  <div class="payout-qr-title">Mã QR của bạn</div>
+                  <div class="payout-qr-image-container">
+                    <img id="payoutQrImage" src="" alt="QR Nhận Tiền" />
+                  </div>
+                  <button class="btn-update-qr" onclick="openPayoutModal()" type="button">Cập nhật thông tin</button>
+                </div>
               </div>
             </div>
-
-            <div class="payout-actions">
-              <button class="btn-convert" id="payoutSaveBtn" type="submit">
-                <span id="payoutSaveLabel">Lưu thông tin nhận tiền</span>
-                <div class="spinner" id="payoutSpinner"></div>
-              </button>
-              <div class="payout-uploaded-at" id="payoutUploadedAt"></div>
-            </div>
-            <div class="payout-status" id="payoutStatus"></div>
-          </form>
+          </div>
         </div>
       </div>
 
@@ -216,24 +227,19 @@
     <div class="steps">
       <div class="step reveal">
         <div class="step-num">01</div>
-        <h4>Đăng ký tài khoản</h4>
-        <p>Đăng ký làm Cộng tác viên Shopee Affiliate. Hoàn toàn miễn phí — không phụ phí, không ràng buộc.</p>
+        <h4>Dán Link Shopee</h4>
       </div>
       <div class="step reveal">
         <div class="step-num">02</div>
-        <h4>Chuyển đổi link</h4>
-        <p>Dán bất kỳ đường dẫn sản phẩm Shopee nào ở trên để nhận ngay phiên bản link tiếp thị sau 1 click.</p>
+        <h4>Mua hàng</h4>
       </div>
       <div class="step reveal">
         <div class="step-num">03</div>
-        <h4>Chia sẻ mọi nơi</h4>
-        <p>Chia sẻ link tiếp thị của bạn lên mạng xã hội, Telegram, các hội nhóm hoặc bất cứ nơi nào có khách hàng của
-          bạn.</p>
+        <h4>Nhận hàng</h4>
       </div>
       <div class="step reveal">
         <div class="step-num">04</div>
-        <h4>Nhận thanh toán</h4>
-        <p>Khi có ai đó mua hàng qua link của bạn, hoa hồng sẽ được chuyển thẳng vào tài khoản. Cực kỳ đơn giản!</p>
+        <h4>Nhận Hoàn tiền</h4>
       </div>
     </div>
   </section>
@@ -305,9 +311,47 @@
       <a href="javascript:void(0)">Bảo mật</a>
       <a href="javascript:void(0)">Điều khoản</a>
       <a href="https://t.me/market_tea_23" target="_blank" rel="noopener noreferrer">Liên hệ</a>
+      <a href="javascript:void(0)" id="footerLogoutBtn" onclick="signOut()" style="display:none;">Đăng xuất</a>
     </div>
     <small>© 2026 Affiliate Shopee. Bảo lưu mọi quyền.</small>
   </footer>
+
+  <!-- Dialog: Payout Setup -->
+  <dialog id="payoutModal" class="payout-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Thông tin nhận tiền hoàn</h3>
+        <button class="modal-close" onclick="closePayoutModal()" type="button">&times;</button>
+      </div>
+      <form id="payoutForm" onsubmit="savePayoutQr(event)">
+        <div class="payout-fields">
+          <label for="payoutRecipientName">Tên người nhận (chữ hoa không dấu)</label>
+          <input type="text" id="payoutRecipientName" class="payout-input" placeholder="Ví dụ: NGUYEN VAN A"
+            autocomplete="name" maxlength="120" />
+
+          <label for="payoutQrInput">Ảnh mã QR ngân hàng hoặc ví</label>
+          <input type="file" id="payoutQrInput" class="payout-file" accept="image/png,image/jpeg,image/webp"
+            onchange="handlePayoutQrSelected(event)" />
+          <div class="payout-help">Chấp nhận PNG, JPG, JPEG, WEBP. Dung lượng tối đa 2MB.</div>
+          <div class="payout-file-name" id="payoutFileName"></div>
+        </div>
+
+        <div class="payout-preview">
+          <img id="payoutQrPreview" alt="Mã QR nhận hoàn tiền" />
+          <div class="payout-preview-empty" id="payoutQrEmpty">Chưa có mã QR</div>
+        </div>
+
+        <div class="payout-actions">
+          <button class="btn-convert" id="payoutSaveBtn" type="submit">
+            <span id="payoutSaveLabel">Lưu thông tin nhận tiền</span>
+            <div class="spinner" id="payoutSpinner"></div>
+          </button>
+          <div class="payout-uploaded-at" id="payoutUploadedAt"></div>
+        </div>
+        <div class="payout-status" id="payoutStatus"></div>
+      </form>
+    </div>
+  </dialog>
 
   <script src="assets/js/config.js"></script>
   <script src="assets/js/utils.js"></script>

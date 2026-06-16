@@ -176,3 +176,333 @@
   -webkit-backdrop-filter: none;
 }
 
+/* Modal styling */
+/* Dialog & Modal styling */
+.payout-dialog {
+  display: none;
+  border: none;
+  border-radius: 20px;
+  padding: 0;
+  background: transparent;
+  max-width: 520px;
+  width: 90%;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+  overflow: visible;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+}
+
+.payout-dialog[open] {
+  display: block;
+  animation: fadeIn 0.3s ease both;
+}
+
+.payout-dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+}
+
+.modal-content {
+  background: #fff;
+  border-radius: 20px;
+  padding: 2rem;
+  color: #1A0A05;
+  text-align: left;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.8rem;
+  margin-bottom: 1.2rem;
+}
+
+.modal-header h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1A0A05;
+  margin: 0;
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #aaa;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.modal-close:hover {
+  color: #000;
+}
+
+/* Override labels inside modal to be dark readable color */
+.modal-content label {
+  color: #1A0A05;
+  display: block;
+  margin-top: 1rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.modal-content .payout-help,
+.modal-content .payout-file-name,
+.modal-content .payout-uploaded-at {
+  color: #555;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+.modal-content .payout-input,
+.modal-content .payout-file {
+  border: 1px solid #ccc;
+  background: #fff;
+  color: #000;
+  width: 100%;
+  padding: 0.6rem;
+  margin-top: 0.4rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.modal-content .payout-preview {
+  border: 1px solid #ddd;
+  margin-top: 1rem;
+  max-width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Setup prompt */
+.payout-setup-prompt {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.setup-prompt-box {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px dashed rgba(255, 255, 255, 0.25);
+  border-radius: 16px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  width: 100%;
+}
+
+.setup-prompt-box:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: var(--yellow);
+  transform: translateY(-2px);
+}
+
+.setup-prompt-icon {
+  font-size: 2.2rem;
+}
+
+.setup-prompt-text {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.setup-prompt-text strong {
+  color: #fff;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.setup-prompt-text span {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+}
+
+/* Dashboard styles */
+.payout-dashboard-layout {
+  display: grid;
+  grid-template-columns: 1fr 140px;
+  gap: 1.5rem;
+}
+
+.payout-left {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.payout-summary-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.06) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+  padding: 1.2rem 1.4rem;
+  text-align: left;
+}
+
+.summary-label {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 0.4rem;
+}
+
+.summary-amount {
+  color: var(--yellow);
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.payout-orders-section {
+  text-align: left;
+}
+
+.orders-header {
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.payout-orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.payout-orders-list::-webkit-scrollbar {
+  width: 5px;
+}
+.payout-orders-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+.payout-orders-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+
+.payout-order-row {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.payout-order-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.payout-order-name {
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.payout-order-meta {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.72rem;
+}
+
+.payout-order-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+  flex-shrink: 0;
+}
+
+.payout-order-amount {
+  color: var(--yellow);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.payout-order-status {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+}
+
+/* Right layout - QR */
+.payout-right {
+  display: flex;
+  flex-direction: column;
+}
+
+.payout-qr-card {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 14px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.payout-qr-title {
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.payout-qr-image-container {
+  width: 100px;
+  height: 100px;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  padding: 0.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.payout-qr-image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.btn-update-qr {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border-radius: 8px;
+  padding: 0.45rem;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-update-qr:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: #fff;
+}
+

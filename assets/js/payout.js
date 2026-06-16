@@ -1,16 +1,18 @@
 function updatePayoutUi() {
   const payoutLoggedOut = document.getElementById('payoutLoggedOut');
-  const payoutForm = document.getElementById('payoutForm');
-  if (!payoutLoggedOut || !payoutForm) return;
+  const payoutSetupPrompt = document.getElementById('payoutSetupPrompt');
+  const payoutDashboard = document.getElementById('payoutDashboard');
+  if (!payoutLoggedOut) return;
 
   if (currentUser) {
     payoutLoggedOut.classList.add('hide');
-    payoutForm.classList.add('show');
     return;
   }
 
   payoutLoggedOut.classList.remove('hide');
-  payoutForm.classList.remove('show');
+  if (payoutSetupPrompt) payoutSetupPrompt.style.display = 'none';
+  if (payoutDashboard) payoutDashboard.style.display = 'none';
+  closePayoutModal();
 }
 
 function resetPayoutForm() {
@@ -41,6 +43,9 @@ async function loadPayoutProfile() {
     .eq('id', currentUser.id)
     .maybeSingle();
 
+  const payoutSetupPrompt = document.getElementById('payoutSetupPrompt');
+  const payoutDashboard = document.getElementById('payoutDashboard');
+
   if (error) {
     showPayoutStatus('Không tải được thông tin nhận tiền. Hãy kiểm tra RLS/schema Supabase.', 'error');
     if (uploadedAt) uploadedAt.textContent = '';
@@ -59,8 +64,24 @@ async function loadPayoutProfile() {
 
   if (data?.payout_qr_path) {
     await loadPayoutQrPreview(data.payout_qr_path);
+    if (payoutSetupPrompt) payoutSetupPrompt.style.display = 'none';
+    if (payoutDashboard) payoutDashboard.style.display = 'block';
+
+    const qrImageEl = document.getElementById('payoutQrImage');
+    if (qrImageEl) {
+      const { data: signedData, error: signedError } = await supabaseClient.storage
+        .from(PAYOUT_QR_BUCKET)
+        .createSignedUrl(data.payout_qr_path, 60 * 60);
+      if (!signedError && signedData?.signedUrl) {
+        qrImageEl.src = signedData.signedUrl;
+      }
+    }
+
+    await loadPayoutOrders();
   } else {
     setPayoutPreview('');
+    if (payoutSetupPrompt) payoutSetupPrompt.style.display = 'flex';
+    if (payoutDashboard) payoutDashboard.style.display = 'none';
   }
 }
 
@@ -184,6 +205,9 @@ async function savePayoutQr(event) {
     if (fileName) fileName.textContent = '';
     await loadPayoutProfile();
     showPayoutStatus('Đã lưu thông tin nhận hoàn tiền.', 'success');
+    setTimeout(() => {
+      closePayoutModal();
+    }, 1200);
   } catch (error) {
     showPayoutStatus(`Không lưu được thông tin nhận tiền: ${error.message || 'Lỗi không xác định'}`, 'error');
     console.error(error);
@@ -252,4 +276,118 @@ function clearPayoutStatus() {
   if (!status) return;
   status.textContent = '';
   status.className = 'payout-status';
+}
+
+function openPayoutModal() {
+  const modal = document.getElementById('payoutModal');
+  if (modal) {
+    if (typeof modal.showModal === 'function') {
+      modal.showModal();
+    } else {
+      modal.classList.add('show');
+    }
+    clearPayoutStatus();
+  }
+}
+
+function closePayoutModal() {
+  const modal = document.getElementById('payoutModal');
+  if (modal) {
+    if (typeof modal.close === 'function') {
+      modal.close();
+    } else {
+      modal.classList.remove('show');
+    }
+  }
+}
+
+window.addEventListener('click', (event) => {
+  const modal = document.getElementById('payoutModal');
+  if (event.target === modal) {
+    closePayoutModal();
+  }
+});
+
+async function loadPayoutOrders() {
+  const totalEl = document.getElementById('payoutEstimatedTotal');
+  const listEl = document.getElementById('payoutOrdersList');
+  if (!totalEl || !listEl) return;
+
+  totalEl.textContent = '0đ';
+  listEl.innerHTML = '<div class="history-empty">Đang tải danh sách đơn hàng...</div>';
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('orders')
+      .select(`
+        shopee_order_id,
+        item_name,
+        commission,
+        net_commission,
+        status,
+        purchase_time,
+        created_at,
+        completed_at,
+        profiles (
+          email,
+          full_name
+        ),
+        affiliate_links:sub_id (
+          original_url,
+          affiliate_url,
+          product_name
+        ),
+        commission_ledger (
+          amount,
+          status
+        )
+      `)
+      .eq('user_id', currentUser.id);
+
+    if (error) throw error;
+
+    const orders = data || [];
+    
+    orders.sort((a, b) => {
+      const timeA = new Date(a.purchase_time || a.created_at || 0);
+      const timeB = new Date(b.purchase_time || b.created_at || 0);
+      return timeB - timeA;
+    });
+
+    let totalNetCommission = 0;
+    orders.forEach(order => {
+      totalNetCommission += Number(order.net_commission || 0);
+    });
+
+    totalEl.textContent = formatCurrency(totalNetCommission);
+
+    if (orders.length === 0) {
+      listEl.innerHTML = '<div class="history-empty">Chưa có đơn hàng nào được ghi nhận.</div>';
+      return;
+    }
+
+    listEl.innerHTML = orders.map(order => {
+      const name = order.item_name || order.affiliate_links?.product_name || 'Đơn hàng Shopee';
+      const time = order.purchase_time ? new Date(order.purchase_time).toLocaleDateString('vi-VN') : '--';
+      const netComm = formatCurrency(order.net_commission);
+      const statusMeta = getOrderStatusMeta(order.status);
+
+      return `
+        <div class="payout-order-row">
+          <div class="payout-order-info">
+            <span class="payout-order-name" title="${escapeHtml(name)}">${escapeHtml(name)}</span>
+            <span class="payout-order-meta">Mã đơn: ${escapeHtml(order.shopee_order_id)} | Ngày: ${time}</span>
+          </div>
+          <div class="payout-order-right">
+            <span class="payout-order-amount">+${netComm}</span>
+            <span class="payout-order-status ${statusMeta.className}">${statusMeta.label}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+  } catch (error) {
+    console.error('Could not load orders:', error);
+    listEl.innerHTML = '<div class="history-empty">Không tải được danh sách đơn hàng.</div>';
+  }
 }

@@ -8,7 +8,7 @@ async function loadLinkHistory() {
     .from('affiliate_links')
     .select('id, sub_id, affiliate_url, normalized_url, estimated_commission, commission_rate, product_name, product_image, created_at')
     .order('created_at', { ascending: false })
-    .limit(8);
+    .limit(20);
 
   if (error) {
     historyList.innerHTML = '<div class="history-empty">Không tải được lịch sử link. Hãy kiểm tra RLS/schema Supabase.</div>';

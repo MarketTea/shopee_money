@@ -187,16 +187,21 @@
   max-width: 520px;
   width: 90%;
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
-  overflow: visible;
+
+  /* Centering positioning */
+  margin: auto !important;
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  margin: 0;
+  inset: 0;
+
+  /* Mobile constraints */
+  max-height: 85vh;
+  max-height: 85dvh;
+  overflow: hidden;
 }
 
 .payout-dialog[open] {
-  display: block;
+  display: flex;
+  flex-direction: column;
   animation: fadeIn 0.3s ease both;
 }
 
@@ -211,6 +216,8 @@
   padding: 2rem;
   color: #1A0A05;
   text-align: left;
+  overflow-y: auto;
+  max-height: 100%;
 }
 
 .modal-header {
@@ -329,23 +336,21 @@
 
 /* Dashboard styles */
 .payout-dashboard-layout {
-  display: grid;
-  grid-template-columns: 1fr 140px;
-  gap: 1.5rem;
-}
-
-.payout-left {
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
+  gap: 1.5rem;
 }
 
 .payout-summary-card {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.06) 100%);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 14px;
-  padding: 1.2rem 1.4rem;
+  padding: 1.2rem 1.6rem;
   text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
 }
 
 .summary-label {
@@ -384,10 +389,12 @@
 .payout-orders-list::-webkit-scrollbar {
   width: 5px;
 }
+
 .payout-orders-list::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 3px;
 }
+
 .payout-orders-list::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.15);
   border-radius: 3px;
@@ -488,21 +495,23 @@
 }
 
 .btn-update-qr {
-  width: 100%;
   background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   color: #fff;
-  border-radius: 8px;
-  padding: 0.45rem;
+  border-radius: 10px;
+  padding: 0.65rem 1.3rem;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.165, 0.84, 0.44, 1);
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .btn-update-qr:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: #fff;
+  background: var(--yellow);
+  color: #1A0A05;
+  border-color: var(--yellow);
+  box-shadow: 0 4px 15px rgba(245, 166, 35, 0.3);
 }
-

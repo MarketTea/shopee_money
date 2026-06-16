@@ -45,13 +45,15 @@
     grid-template-columns: 1fr;
   }
 
-  .payout-dashboard-layout {
-    grid-template-columns: 1fr;
+  .payout-summary-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.2rem;
   }
 
-  .payout-qr-card {
-    max-width: 220px;
-    margin: 0 auto;
+  .btn-update-qr {
+    width: 100%;
+    text-align: center;
   }
 
   .payout-preview {

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -127,27 +127,18 @@
           <!-- Logged In: Dashboard State -->
           <div id="payoutDashboard" class="payout-dashboard" style="display:none;">
             <div class="payout-dashboard-layout">
-              <div class="payout-left">
-                <div class="payout-summary-card">
+              <div class="payout-summary-card">
+                <div class="summary-details">
                   <div class="summary-label">🌸 Tổng hoa hồng ước tính nhận được</div>
                   <div class="summary-amount" id="payoutEstimatedTotal">0đ</div>
                 </div>
-
-                <div class="payout-orders-section">
-                  <div class="orders-header">Chi tiết đơn hàng nhận hoàn tiền</div>
-                  <div class="payout-orders-list" id="payoutOrdersList">
-                    <!-- Dynamic rendering -->
-                  </div>
-                </div>
+                <button class="btn-update-qr" onclick="openPayoutModal()" type="button">Cập nhật thông tin</button>
               </div>
 
-              <div class="payout-right">
-                <div class="payout-qr-card">
-                  <div class="payout-qr-title">Mã QR của bạn</div>
-                  <div class="payout-qr-image-container">
-                    <img id="payoutQrImage" src="" alt="QR Nhận Tiền" />
-                  </div>
-                  <button class="btn-update-qr" onclick="openPayoutModal()" type="button">Cập nhật thông tin</button>
+              <div class="payout-orders-section">
+                <div class="orders-header">Chi tiết đơn hàng nhận hoàn tiền</div>
+                <div class="payout-orders-list" id="payoutOrdersList">
+                  <!-- Dynamic rendering -->
                 </div>
               </div>
             </div>

@@ -320,6 +320,7 @@ async function loadPayoutOrders() {
     const { data, error } = await supabaseClient
       .from('orders')
       .select(`
+        id,
         shopee_order_id,
         item_name,
         commission,
@@ -346,6 +347,20 @@ async function loadPayoutOrders() {
 
     if (error) throw error;
 
+    // Lấy danh sách các đơn đã rút (kể cả pending/completed) để loại bỏ khỏi phần khả dụng
+    const { data: withdrawals } = await supabaseClient
+      .from('withdrawal_requests')
+      .select('order_ids')
+      .eq('user_id', currentUser.id)
+      .neq('status', 'rejected');
+
+    const withdrawnIds = new Set();
+    if (withdrawals) {
+      withdrawals.forEach(w => {
+        (w.order_ids || []).forEach(id => withdrawnIds.add(id));
+      });
+    }
+
     const orders = data || [];
     
     orders.sort((a, b) => {
@@ -356,10 +371,13 @@ async function loadPayoutOrders() {
 
     let totalNetCommission = 0;
     orders.forEach(order => {
-      totalNetCommission += Number(order.net_commission || 0);
+      // Chỉ tính đơn "approved" (Hoàn thành) và CHƯA nằm trong yêu cầu rút tiền
+      if (order.status === 'approved' && !withdrawnIds.has(order.id)) {
+        totalNetCommission += Number(order.net_commission || 0);
+      }
     });
 
-    totalEl.textContent = formatCurrency(totalNetCommission);
+    totalEl.textContent = formatCurrency(totalNetCommission / 2); // Hiển thị 50% mà user thực sự có thể rút
 
     if (orders.length === 0) {
       listEl.innerHTML = '<div class="history-empty">Chưa có đơn hàng nào được ghi nhận.</div>';

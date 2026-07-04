@@ -129,10 +129,14 @@
             <div class="payout-dashboard-layout">
               <div class="payout-summary-card">
                 <div class="summary-details">
-                  <div class="summary-label">🌸 Tổng hoa hồng ước tính nhận được</div>
+                  <div class="summary-label">🌸 Tổng hoa hồng ước tính</div>
                   <div class="summary-amount" id="payoutEstimatedTotal">0đ</div>
                 </div>
-                <button class="btn-update-qr" onclick="openPayoutModal()" type="button">Cập nhật thông tin</button>
+                <div class="payout-summary-actions">
+                  <button class="btn-update-qr" onclick="openPayoutModal()" type="button">Cập nhật thông tin</button>
+                  <button class="btn-update-qr" id="btnWithdraw" onclick="openWithdrawModal()" type="button">💰💰 Rút
+                    tiền về túi</button>
+                </div>
               </div>
 
               <div class="payout-orders-section">
@@ -344,10 +348,60 @@
     </div>
   </dialog>
 
+  <!-- Dialog: Rút tiền -->
+  <dialog id="withdrawModal" class="payout-dialog withdraw-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>💰 Yêu cầu rút tiền</h3>
+        <button class="modal-close" onclick="closeWithdrawModal()" type="button">&times;</button>
+      </div>
+
+      <div id="withdrawContent">
+        <!-- Summary -->
+        <div class="withdraw-summary">
+          <div class="withdraw-summary-row">
+            <span class="withdraw-summary-label">Đơn hoàn thành đủ điều kiện</span>
+            <span class="withdraw-summary-value" id="withdrawEligibleCount">0 đơn</span>
+          </div>
+          <div class="withdraw-summary-row">
+            <span class="withdraw-summary-label">Tổng hoa hồng net</span>
+            <span class="withdraw-summary-value" id="withdrawTotalNet">0đ</span>
+          </div>
+          <div class="withdraw-summary-row highlight-green">
+            <span class="withdraw-summary-label">✅ Số tiền có thể rút lần này</span>
+            <span class="withdraw-summary-value withdraw-available" id="withdrawAvailable">0đ</span>
+          </div>
+        </div>
+
+
+
+        <!-- Withdraw action -->
+        <div class="withdraw-action">
+          <div class="withdraw-note">💵 💵 Sau khi gửi yêu cầu, admin sẽ chuyển tiền vào tài khoản đã đăng ký.</div>
+          <button class="btn-convert btn-do-withdraw" id="btnDoWithdraw" type="button"
+            onclick="submitWithdrawRequest()">
+            <span id="withdrawBtnLabel">Gửi yêu cầu rút tiền</span>
+            <div class="spinner" id="withdrawSpinner"></div>
+          </button>
+          <div class="withdraw-status" id="withdrawStatus"></div>
+        </div>
+
+        <!-- History -->
+        <div class="withdraw-history-section">
+          <div class="withdraw-history-title">Lịch sử rút tiền</div>
+          <div class="withdraw-history-list" id="withdrawHistoryList">
+            <div class="history-empty">Đang tải...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
   <script src="assets/js/config.js"></script>
   <script src="assets/js/utils.js"></script>
   <script src="assets/js/auth.js"></script>
   <script src="assets/js/payout.js"></script>
+  <script src="assets/js/withdrawal.js"></script>
   <script src="assets/js/shopee.js"></script>
   <script src="assets/js/converter.js"></script>
   <script src="assets/js/history.js"></script>

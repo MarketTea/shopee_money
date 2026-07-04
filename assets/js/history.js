@@ -160,9 +160,9 @@ function renderHistoryOrders(orders) {
 function getOrderStatusMeta(status) {
   const map = {
     pending: { label: 'Đang chờ xử lý', className: 'is-pending' },
-    approved: { label: 'Chưa thanh toán', className: 'is-approved' },
-    paid: { label: 'Đã hoàn thành', className: 'is-paid' },
-    rejected: { label: 'Đã huỷ', className: 'is-rejected' }
+    approved: { label: 'Hoàn thành', className: 'is-approved' },
+    paid: { label: 'Đã thanh toán', className: 'is-paid' },
+    rejected: { label: 'Đã hủy', className: 'is-rejected' }
   };
 
   return map[status] || { label: status || 'Không rõ', className: 'is-pending' };

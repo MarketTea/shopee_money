@@ -185,7 +185,7 @@
   border: none;
   border-radius: 20px;
   padding: 0;
-  background: transparent;
+  background: #fff;
   max-width: 520px;
   width: 90%;
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
@@ -194,6 +194,11 @@
   margin: auto !important;
   position: fixed;
   inset: 0;
+  
+  max-height: 85vh;
+  max-height: 85dvh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .payout-dialog[open] {
@@ -207,14 +212,9 @@
 }
 
 .modal-content {
-  background: #fff;
-  border-radius: 20px;
   padding: 1.5rem;
   color: #1A0A05;
   text-align: left;
-  overflow-y: auto;
-  max-height: 85vh;
-  max-height: 85dvh;
 }
 
 .modal-header {

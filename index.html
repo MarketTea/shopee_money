@@ -106,15 +106,6 @@
       <!-- Tab Content: Payout QR -->
       <div class="tab-content" id="tabContentPayout">
         <div class="payout-panel" id="payoutPanel">
-          <!-- Logged Out State -->
-          <div class="payout-locked" id="payoutLoggedOut">
-            <div>
-              <div class="payout-lock-title">Đăng nhập để thêm mã QR</div>
-              <p>Thông tin nhận tiền được gắn với tài khoản Google của bạn.</p>
-            </div>
-            <button class="btn-auth" onclick="signInWithGoogle()" type="button">Đăng nhập Google</button>
-          </div>
-
           <!-- Logged In: Not Setup QR State -->
           <div id="payoutSetupPrompt" class="payout-setup-prompt"
             style="display:none; justify-content: center; align-items: center; padding: 2.5rem 1rem;">
@@ -156,6 +147,7 @@
         <div class="auth-copy">
           <div class="auth-title" id="authTitle">Đăng nhập để nhận hoàn tiền</div>
           <div class="auth-status" id="authStatus">Mỗi link sẽ được gắn mã tracking riêng theo tài khoản của bạn.</div>
+          <div class="auth-bonus-badge">🎁 Đăng nhập lần đầu nhận ngay <strong>20.000đ</strong> vào tài khoản!</div>
         </div>
         <div class="auth-actions">
           <button class="btn-auth" id="loginBtn" onclick="signInWithGoogle()" type="button">Đăng nhập Google</button>
@@ -367,10 +359,15 @@
             <span class="withdraw-summary-label">Tổng hoa hồng net</span>
             <span class="withdraw-summary-value" id="withdrawTotalNet">0đ</span>
           </div>
+          <div class="withdraw-summary-row withdraw-bonus-row" id="withdrawBonusRow" style="display:none;">
+            <span class="withdraw-summary-label">🎁 Bonus tặng khi đăng ký</span>
+            <span class="withdraw-summary-value withdraw-bonus" id="withdrawBonusAmount">0đ</span>
+          </div>
           <div class="withdraw-summary-row highlight-green">
             <span class="withdraw-summary-label">✅ Số tiền có thể rút lần này</span>
             <span class="withdraw-summary-value withdraw-available" id="withdrawAvailable">0đ</span>
           </div>
+          <div class="withdraw-min-warning" id="withdrawMinWarning" style="display:none;"></div>
         </div>
 
 

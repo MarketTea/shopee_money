@@ -13,6 +13,9 @@
 let _withdrawEligibleOrders = [];   // Đơn Hoàn thành chưa rút
 let _withdrawAlreadyAmount  = 0;    // Số tiền đã rút trước đó (50% của tổng cũ)
 let _withdrawAvailableNet   = 0;    // Net commission chưa rút (để tính 50%)
+let _withdrawBonusBalance   = 0;    // Số dư bonus (signup bonus + khuyến mãi)
+
+const WITHDRAW_MINIMUM_AMOUNT = 50000; // Tối thiểu 50.000đ mới được rút
 
 // ─── Mở / Đóng modal ─────────────────────────────────────────────────────────
 async function openWithdrawModal() {
@@ -52,7 +55,17 @@ async function loadWithdrawData() {
   setWithdrawLoading(true);
 
   try {
-    // 1. Lấy TẤT CẢ đơn "approved" (Hoàn thành) của user
+    // 1. Lấy bonus_balance từ profile của user
+    const { data: profileData, error: profileError } = await supabaseClient
+      .from('profiles')
+      .select('bonus_balance')
+      .eq('id', currentUser.id)
+      .maybeSingle();
+
+    if (profileError) throw profileError;
+    _withdrawBonusBalance = Number(profileData?.bonus_balance || 0);
+
+    // 2. Lấy TẤT CẢ đơn "approved" (Hoàn thành) của user
     const { data: approvedOrders, error: ordersError } = await supabaseClient
       .from('orders')
       .select('id, shopee_order_id, item_name, net_commission, purchase_time, completed_at, status')
@@ -63,7 +76,7 @@ async function loadWithdrawData() {
 
     const allApproved = approvedOrders || [];
 
-    // 2. Lấy toàn bộ lịch sử rút tiền đã được ghi nhận (kể cả pending)
+    // 3. Lấy toàn bộ lịch sử rút tiền đã được ghi nhận (kể cả pending)
     const { data: withdrawals, error: withdrawError } = await supabaseClient
       .from('withdrawal_requests')
       .select('id, amount, total_net_commission, order_ids, status, created_at')
@@ -74,7 +87,7 @@ async function loadWithdrawData() {
 
     const allWithdrawals = withdrawals || [];
 
-    // 3. Thu thập tập hợp các order_id đã được tính vào withdrawal trước đó
+    // 4. Thu thập tập hợp các order_id đã được tính vào withdrawal trước đó
     //    (bất kỳ trạng thái nào — kể cả pending — để tránh tính trùng)
     const alreadyWithdrawnOrderIds = new Set();
     let totalAlreadyWithdrawnNet = 0;
@@ -90,33 +103,34 @@ async function loadWithdrawData() {
     // Số tiền đã rút (50% của tổng net đã rút)
     _withdrawAlreadyAmount = totalAlreadyWithdrawnNet / 2;
 
-    // 4. Tách đơn chưa rút
+    // 5. Tách đơn chưa rút
     _withdrawEligibleOrders = allApproved.filter(o => !alreadyWithdrawnOrderIds.has(o.id));
 
-    // 5. Tính net chưa rút và số tiền user sẽ nhận
+    // 6. Tính net chưa rút và số tiền user sẽ nhận từ commission
     _withdrawAvailableNet = _withdrawEligibleOrders.reduce(
       (sum, o) => sum + Number(o.net_commission || 0), 0
     );
-    const availableForUser = _withdrawAvailableNet / 2;
+    const commissionForUser = _withdrawAvailableNet / 2;
 
-    // Tổng net tất cả đơn approved (để hiển thị)
-    const totalNetAllApproved = allApproved.reduce(
-      (sum, o) => sum + Number(o.net_commission || 0), 0
-    );
+    // 7. Tổng số dư user có thể rút = commission + bonus
+    const totalAvailableForUser = commissionForUser + _withdrawBonusBalance;
 
-    // 6. Cập nhật UI summary
+    // 8. Cập nhật UI summary
     const fmt = formatCurrency;
     setWithdrawSummary({
       eligibleCount: _withdrawEligibleOrders.length,
       totalNet: fmt(_withdrawAvailableNet),
-      available: fmt(availableForUser),
-      hasAvailable: availableForUser > 0
+      available: fmt(totalAvailableForUser),
+      bonusBalance: fmt(_withdrawBonusBalance),
+      hasBonus: _withdrawBonusBalance > 0,
+      totalAvailable: totalAvailableForUser,
+      meetsMinimum: totalAvailableForUser >= WITHDRAW_MINIMUM_AMOUNT
     });
 
-    // 7. Render danh sách đơn đủ điều kiện
+    // 9. Render danh sách đơn đủ điều kiện
     renderWithdrawOrders(_withdrawEligibleOrders);
 
-    // 8. Render lịch sử rút tiền
+    // 10. Render lịch sử rút tiền
     renderWithdrawHistory(allWithdrawals);
 
   } catch (err) {
@@ -128,13 +142,33 @@ async function loadWithdrawData() {
 }
 
 // ─── Cập nhật UI Summary ─────────────────────────────────────────────────────
-function setWithdrawSummary({ eligibleCount, totalNet, available, hasAvailable }) {
+function setWithdrawSummary({ eligibleCount, totalNet, available, bonusBalance, hasBonus, totalAvailable, meetsMinimum }) {
   setElText('withdrawEligibleCount', `${eligibleCount} đơn`);
   setElText('withdrawTotalNet', totalNet);
   setElText('withdrawAvailable', available);
 
+  // Hiển thị dòng bonus nếu có
+  const bonusRow = document.getElementById('withdrawBonusRow');
+  const bonusEl  = document.getElementById('withdrawBonusAmount');
+  if (bonusRow) bonusRow.style.display = hasBonus ? 'flex' : 'none';
+  if (bonusEl)  bonusEl.textContent = bonusBalance;
+
+  // Hiển thị cảnh báo nếu chưa đạt ngưỡng tối thiểu
+  const minWarnEl = document.getElementById('withdrawMinWarning');
+  if (minWarnEl) {
+    if (!meetsMinimum && totalAvailable > 0) {
+      minWarnEl.textContent = `Cần ít nhất 50.000đ để rút tiền. Hiện tại bạn có ${formatCurrency(totalAvailable)}.`;
+      minWarnEl.style.display = 'block';
+    } else if (!meetsMinimum && totalAvailable <= 0) {
+      minWarnEl.textContent = 'Chưa có số dư để rút tiền.';
+      minWarnEl.style.display = 'block';
+    } else {
+      minWarnEl.style.display = 'none';
+    }
+  }
+
   const btn = document.getElementById('btnDoWithdraw');
-  if (btn) btn.disabled = !hasAvailable;
+  if (btn) btn.disabled = !meetsMinimum;
 }
 
 // ─── Render danh sách đơn đủ điều kiện ──────────────────────────────────────
@@ -216,14 +250,15 @@ async function submitWithdrawRequest() {
     return;
   }
 
-  if (!_withdrawEligibleOrders.length) {
-    showWithdrawStatus('Không có đơn hàng nào đủ điều kiện rút tiền.', 'error');
-    return;
-  }
+  const commissionForUser = _withdrawAvailableNet / 2;
+  const totalAvailableForUser = commissionForUser + _withdrawBonusBalance;
 
-  const availableForUser = _withdrawAvailableNet / 2;
-  if (availableForUser <= 0) {
-    showWithdrawStatus('Số tiền có thể rút phải lớn hơn 0.', 'error');
+  // Validate: phải có ít nhất 50.000đ
+  if (totalAvailableForUser < WITHDRAW_MINIMUM_AMOUNT) {
+    showWithdrawStatus(
+      `Cần ít nhất ${formatCurrency(WITHDRAW_MINIMUM_AMOUNT)} để rút tiền. Hiện tại bạn có ${formatCurrency(totalAvailableForUser)}.`,
+      'error'
+    );
     return;
   }
 
@@ -238,7 +273,7 @@ async function submitWithdrawRequest() {
       .from('withdrawal_requests')
       .insert({
         user_id: currentUser.id,
-        amount: availableForUser,
+        amount: totalAvailableForUser,
         total_net_commission: _withdrawAvailableNet,
         order_ids: orderIds,
         status: 'pending'
@@ -247,7 +282,7 @@ async function submitWithdrawRequest() {
     if (error) throw error;
 
     showWithdrawStatus(
-      `✅ Đã gửi yêu cầu rút ${formatCurrency(availableForUser)} thành công! Admin sẽ xử lý sớm.`,
+      `✅ Đã gửi yêu cầu rút ${formatCurrency(totalAvailableForUser)} thành công! Admin sẽ xử lý sớm.`,
       'success'
     );
 

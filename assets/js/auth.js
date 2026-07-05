@@ -29,11 +29,58 @@ function setCurrentUser(user) {
   updateAuthUi();
   updatePayoutUi();
   if (currentUser) {
-    loadLinkHistory();
-    loadPayoutProfile();
+    grantSignupBonusIfNeeded().then(() => {
+      loadLinkHistory();
+      loadPayoutProfile();
+    });
   } else {
     renderHistory([]);
     resetPayoutForm();
+  }
+}
+
+/**
+ * Kiểm tra và cấp bonus 20.000đ cho user mới đăng nhập lần đầu.
+ * - Nếu profile chưa có signup_bonus_credited = true → upsert với bonus_balance = 20000
+ * - Dùng upsert an toàn: chỉ set bonus khi chưa được credited (tránh reset)
+ */
+async function grantSignupBonusIfNeeded() {
+  if (!supabaseClient || !currentUser) return;
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('profiles')
+      .select('signup_bonus_credited, bonus_balance')
+      .eq('id', currentUser.id)
+      .maybeSingle();
+
+    if (error) {
+      console.error('grantSignupBonusIfNeeded: cannot fetch profile', error);
+      return;
+    }
+
+    // Nếu đã credited rồi → bỏ qua
+    if (data?.signup_bonus_credited) return;
+
+    // Chưa có bonus → credit ngay
+    const { error: upsertError } = await supabaseClient
+      .from('profiles')
+      .upsert({
+        id: currentUser.id,
+        email: currentUser.email,
+        full_name: currentUser.user_metadata?.full_name || null,
+        avatar_url: currentUser.user_metadata?.avatar_url || null,
+        bonus_balance: 20000,
+        signup_bonus_credited: true
+      }, { onConflict: 'id' });
+
+    if (upsertError) {
+      console.error('grantSignupBonusIfNeeded: upsert failed', upsertError);
+    } else {
+      console.log('✅ Đã cấp bonus 20.000đ cho user mới:', currentUser.email);
+    }
+  } catch (err) {
+    console.error('grantSignupBonusIfNeeded error:', err);
   }
 }
 

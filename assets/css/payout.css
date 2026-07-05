@@ -136,10 +136,12 @@
 
 .payout-actions {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 1rem;
-  margin-top: 1.2rem;
-  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.8rem;
+  margin-top: 1.5rem;
+  text-align: center;
 }
 
 .payout-status {
@@ -192,16 +194,10 @@
   margin: auto !important;
   position: fixed;
   inset: 0;
-
-  /* Mobile constraints */
-  max-height: 85vh;
-  max-height: 85dvh;
-  overflow: hidden;
 }
 
 .payout-dialog[open] {
-  display: flex;
-  flex-direction: column;
+  display: block;
   animation: fadeIn 0.3s ease both;
 }
 
@@ -213,11 +209,12 @@
 .modal-content {
   background: #fff;
   border-radius: 20px;
-  padding: 2rem;
+  padding: 1.5rem;
   color: #1A0A05;
   text-align: left;
   overflow-y: auto;
-  max-height: 100%;
+  max-height: 85vh;
+  max-height: 85dvh;
 }
 
 .modal-header {
@@ -614,6 +611,7 @@
 .btn-do-withdraw {
   width: 100%;
   position: relative;
+  justify-content: center;
 }
 
 .withdraw-status {
@@ -730,4 +728,32 @@
 .wr-rejected {
   background: rgba(220, 38, 38, 0.12);
   color: #dc2626;
+}
+
+/* ── Bonus row trong withdraw summary ── */
+.withdraw-summary-row.withdraw-bonus-row {
+  background: rgba(245, 166, 35, 0.10);
+  border-radius: 8px;
+  padding: 0.4rem 0.6rem;
+  margin: 0 -0.4rem;
+  border: 1px solid rgba(245, 166, 35, 0.28);
+}
+
+.withdraw-bonus {
+  color: #b45309;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+/* ── Cảnh báo chưa đạt ngưỡng tối thiểu ── */
+.withdraw-min-warning {
+  background: rgba(234, 88, 12, 0.10);
+  border: 1px solid rgba(234, 88, 12, 0.28);
+  border-radius: 8px;
+  color: #c2410c;
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.5;
+  padding: 0.55rem 0.75rem;
+  margin-top: 0.3rem;
 }

@@ -1,15 +1,11 @@
 function updatePayoutUi() {
-  const payoutLoggedOut = document.getElementById('payoutLoggedOut');
   const payoutSetupPrompt = document.getElementById('payoutSetupPrompt');
   const payoutDashboard = document.getElementById('payoutDashboard');
-  if (!payoutLoggedOut) return;
 
   if (currentUser) {
-    payoutLoggedOut.classList.add('hide');
     return;
   }
 
-  payoutLoggedOut.classList.remove('hide');
   if (payoutSetupPrompt) payoutSetupPrompt.style.display = 'none';
   if (payoutDashboard) payoutDashboard.style.display = 'none';
   closePayoutModal();
@@ -347,6 +343,15 @@ async function loadPayoutOrders() {
 
     if (error) throw error;
 
+    // Lấy thông tin bonus_balance từ profile
+    const { data: profileData } = await supabaseClient
+      .from('profiles')
+      .select('bonus_balance')
+      .eq('id', currentUser.id)
+      .maybeSingle();
+
+    const bonusBalance = Number(profileData?.bonus_balance || 0);
+
     // Lấy danh sách các đơn đã rút (kể cả pending/completed) để loại bỏ khỏi phần khả dụng
     const { data: withdrawals } = await supabaseClient
       .from('withdrawal_requests')
@@ -362,7 +367,7 @@ async function loadPayoutOrders() {
     }
 
     const orders = data || [];
-    
+
     orders.sort((a, b) => {
       const timeA = new Date(a.purchase_time || a.created_at || 0);
       const timeB = new Date(b.purchase_time || b.created_at || 0);
@@ -377,7 +382,8 @@ async function loadPayoutOrders() {
       }
     });
 
-    totalEl.textContent = formatCurrency(totalNetCommission / 2); // Hiển thị 50% mà user thực sự có thể rút
+    // Hiển thị 50% hoa hồng + bonus
+    totalEl.textContent = formatCurrency((totalNetCommission / 2) + bonusBalance);
 
     if (orders.length === 0) {
       listEl.innerHTML = '<div class="history-empty">Chưa có đơn hàng nào được ghi nhận.</div>';

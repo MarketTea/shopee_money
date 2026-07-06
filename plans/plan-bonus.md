@@ -35,13 +35,9 @@ Migration đã được push lên remote database thành công vào ngày 2026-0
 
 ### Frontend — `assets/js/auth.js`
 
-- Hàm `setCurrentUser()` được cập nhật: sau khi set user, gọi `grantSignupBonusIfNeeded()` trước khi load data.
-
-- Hàm `grantSignupBonusIfNeeded()` (async):
-  - Fetch `signup_bonus_credited` và `bonus_balance` từ bảng `profiles`
-  - Nếu `signup_bonus_credited = false` hoặc `null` (user cũ chưa nhận bonus): upsert `bonus_balance = 20000` và `signup_bonus_credited = true`
-  - Nếu đã credited: bỏ qua hoàn toàn
-  - **Idempotent**: chạy nhiều lần không tặng thêm bonus
+- **Đã xóa bỏ** hàm `grantSignupBonusIfNeeded()` ở phía Client.
+- Việc cộng 20.000đ giờ đây phụ thuộc hoàn toàn vào Database Trigger `handle_new_user` khi user được tạo lần đầu.
+- User cũ đăng nhập lại sẽ không nhận được bonus (giữ nguyên số dư 0đ hiện tại), đảm bảo chỉ user thật sự mới tham gia app mới có quà tặng.
 
 ### Frontend — `assets/js/withdrawal.js`
 
@@ -122,13 +118,13 @@ amount = totalAvailableForUser  (commissionForUser + bonus_balance)
 6. loadPayoutProfile() / loadWithdrawData() → hiển thị bonus_balance=20.000đ
 ```
 
-### User cũ (đã có tài khoản, chưa có bonus)
+### User cũ (đã có tài khoản)
 
 ```
-1. User đăng nhập → setCurrentUser() → grantSignupBonusIfNeeded()
-2. Đọc DB → signup_bonus_credited=false (cột mới, default false)
-3. Upsert: bonus_balance=20000, signup_bonus_credited=true
-4. loadPayoutProfile() / loadWithdrawData() → hiển thị bonus_balance=20.000đ
+1. User đăng nhập → setCurrentUser()
+2. loadPayoutProfile() đọc DB → bonus_balance = 0 (vì user cũ default = 0)
+3. Trigger on_auth_user_created có chạy nhưng `ON CONFLICT DO UPDATE` không ghi đè `bonus_balance`.
+4. Giao diện hiển thị bonus: 0đ (ẩn dòng bonus).
 ```
 
 ### User cố rút tiền khi chưa đủ 50k

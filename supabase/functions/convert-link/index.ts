@@ -33,6 +33,26 @@ const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 const shopeeConvertApi = "https://shopeecd.vercel.app/api/public/shopee/convert-link";
 
+// ── Simple in-memory rate limiter (max 10 requests/minute per user) ──────────
+const RATE_LIMIT_MAX = 10;
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+
+function isRateLimited(userId: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(userId);
+
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(userId, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return false;
+  }
+
+  if (entry.count >= RATE_LIMIT_MAX) return true;
+
+  entry.count++;
+  return false;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -63,6 +83,11 @@ Deno.serve(async (req) => {
 
     if (userError || !user) {
       return json({ error: "Invalid user session" }, 401);
+    }
+
+    // Rate limit check — after auth so only authenticated users are tracked
+    if (isRateLimited(user.id)) {
+      return json({ error: "Quá nhiều yêu cầu. Vui lòng thử lại sau 1 phút." }, 429);
     }
 
     const body = (await req.json()) as ConvertBody;

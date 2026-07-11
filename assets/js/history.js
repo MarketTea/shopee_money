@@ -169,8 +169,8 @@ function getOrderStatusMeta(status) {
 }
 
 function formatCurrency(value) {
-  const number = Number(value || 0);
-  return `${number.toLocaleString('vi-VN', { maximumFractionDigits: 2 })}đ`;
+  const number = Math.round(Number(value || 0));
+  return `${number.toLocaleString('vi-VN')}đ`;
 }
 
 function formatShortUrl(url) {

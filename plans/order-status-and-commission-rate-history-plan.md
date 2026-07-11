@@ -73,3 +73,14 @@ Click report chưa nằm trong phase này; conversion report là nguồn chuẩn
 - App dùng `Sub_id1` để gửi tracking key dạng `u_<userShortId>_l_<linkShortId>`, nên import chỉ match bằng `Sub_id1`.
 - Admin chạy import local bằng service role key; key này không commit vào repo và không đưa lên frontend.
 - CSV hiện tại có nhiều dòng không có `Sub_id1`; các dòng đó chỉ được lưu raw để audit và không trả hoa hồng cho user nào.
+
+## Cách thực hiện
+
+1. Download file CSV từ Shopee Affiliate
+2. Import file CSV vào Supabase
+
+```bash
+SUPABASE_URL='https://zgdnjlqqgxfpeizaawat.supabase.co' \
+SUPABASE_SERVICE_ROLE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnZG5qbHFxZ3hmcGVpemFhd2F0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MDQwNzk1MywiZXhwIjoyMDk1OTgzOTUzfQ.sTv1vWK3iR3vx2o7F2_cyCALbs88IXlF1le1tUgz_-w' \
+node scripts/import-shopee-conversions.mjs /Users/sotatek/Desktop/AffiliateCommissionReport_202606161026.csv
+```

@@ -105,180 +105,151 @@
   margin: 0 auto;
 }
 
-.steps {
-  display: flex;
-  justify-content: space-between;
-  align-items: stretch;
-  position: relative;
-  gap: 1rem;
-  margin-top: 3.5rem;
-}
-
-/* Connection line between steps */
-.steps::before {
-  content: '';
-  position: absolute;
-  top: 36px;
-  left: 50px;
-  right: 50px;
-  height: 3px;
-  background: rgba(255, 255, 255, 0.12);
-  z-index: 1;
-}
-
-/* Animated active progress line overlay */
-.steps::after {
-  content: '';
-  position: absolute;
-  top: 36px;
-  left: 50px;
-  width: 0%;
-  height: 3px;
-  background: linear-gradient(90deg, var(--yellow), var(--orange));
-  z-index: 1;
-  animation: progressPulse 8s infinite ease-in-out;
-}
-
-@keyframes progressPulse {
-  0% {
-    width: 0%;
-  }
-  30% {
-    width: 33.33%;
-  }
-  60% {
-    width: 66.66%;
-  }
-  90%, 100% {
-    width: 100%;
-  }
-}
-
-.step {
-  text-align: center;
-  flex: 1;
-  position: relative;
-  z-index: 2;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 1.4rem 1rem;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
-}
-
-.step:hover {
-  transform: translateY(-4px);
-  border-color: rgba(255, 255, 255, 0.25);
+/* Compact stepper card */
+.stepper-card {
+  margin-top: 2.5rem;
   background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 2rem 2.5rem;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
-.step-num {
-  width: 42px;
-  height: 42px;
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+/* Step item */
+.stepper-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+  cursor: default;
+}
+
+/* Icon circle wrapper (for the glow ring on active) */
+.stepper-icon-wrap {
+  position: relative;
+}
+
+.stepper-icon {
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  font-weight: 700;
-  font-size: 0.95rem;
-  color: #fff;
-  margin: 0 auto 1rem;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
   position: relative;
-  transition: all 0.3s;
+  z-index: 2;
 }
 
-.step h4 {
+.stepper-icon svg {
+  width: 22px;
+  height: 22px;
+  color: rgba(255, 255, 255, 0.6);
+  transition: color 0.4s;
+}
+
+.stepper-label {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  font-size: 0.92rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+  text-align: center;
+  transition: color 0.4s;
+  white-space: nowrap;
+}
+
+/* Active step */
+.stepper-step.active .stepper-icon {
+  background: #fff;
+  border-color: var(--yellow);
+  border-width: 3px;
+  box-shadow: 0 0 0 5px rgba(245, 166, 35, 0.28);
+}
+
+.stepper-step.active .stepper-icon svg {
+  color: var(--yellow);
+}
+
+.stepper-step.active .stepper-label {
+  color: rgba(255, 255, 255, 0.95);
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-  margin: 0;
-  transition: color 0.3s;
 }
 
-/* Sequential animation highlight for active state */
-.step:nth-child(1) { animation: activeStep1 8s infinite; }
-.step:nth-child(2) { animation: activeStep2 8s infinite; }
-.step:nth-child(3) { animation: activeStep3 8s infinite; }
-.step:nth-child(4) { animation: activeStep4 8s infinite; }
-
-@keyframes activeStep1 {
-  0%, 25% {
-    border-color: var(--yellow);
-    background: rgba(255, 255, 255, 0.12);
-  }
-  26%, 100% {
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-}
-@keyframes activeStep2 {
-  30%, 55% {
-    border-color: var(--yellow);
-    background: rgba(255, 255, 255, 0.12);
-  }
-  0%, 29%, 56%, 100% {
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-}
-@keyframes activeStep3 {
-  60%, 85% {
-    border-color: var(--yellow);
-    background: rgba(255, 255, 255, 0.12);
-  }
-  0%, 59%, 86%, 100% {
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-}
-@keyframes activeStep4 {
-  90%, 100% {
-    border-color: var(--yellow);
-    background: rgba(255, 255, 255, 0.12);
-  }
-  0%, 89% {
-    border-color: rgba(255, 255, 255, 0.1);
-  }
+/* Completed step (before active) */
+.stepper-step.completed .stepper-icon {
+  background: rgba(245, 166, 35, 0.15);
+  border-color: rgba(245, 166, 35, 0.45);
 }
 
-/* Step Number Active Highlights matching the keyframes */
-.step:nth-child(1) .step-num { animation: activeNum1 8s infinite; }
-.step:nth-child(2) .step-num { animation: activeNum2 8s infinite; }
-.step:nth-child(3) .step-num { animation: activeNum3 8s infinite; }
-.step:nth-child(4) .step-num { animation: activeNum4 8s infinite; }
-
-@keyframes activeNum1 {
-  0%, 25% { background: var(--yellow); color: #1A0A05; border-color: var(--yellow); box-shadow: 0 0 15px rgba(245, 166, 35, 0.4); }
-  26%, 100% { background: rgba(255, 255, 255, 0.1); color: #fff; border-color: rgba(255, 255, 255, 0.2); }
-}
-@keyframes activeNum2 {
-  30%, 55% { background: var(--yellow); color: #1A0A05; border-color: var(--yellow); box-shadow: 0 0 15px rgba(245, 166, 35, 0.4); }
-  0%, 29%, 56%, 100% { background: rgba(255, 255, 255, 0.1); color: #fff; border-color: rgba(255, 255, 255, 0.2); }
-}
-@keyframes activeNum3 {
-  60%, 85% { background: var(--yellow); color: #1A0A05; border-color: var(--yellow); box-shadow: 0 0 15px rgba(245, 166, 35, 0.4); }
-  0%, 59%, 86%, 100% { background: rgba(255, 255, 255, 0.1); color: #fff; border-color: rgba(255, 255, 255, 0.2); }
-}
-@keyframes activeNum4 {
-  90%, 100% { background: var(--yellow); color: #1A0A05; border-color: var(--yellow); box-shadow: 0 0 15px rgba(245, 166, 35, 0.4); }
-  0%, 89% { background: rgba(255, 255, 255, 0.1); color: #fff; border-color: rgba(255, 255, 255, 0.2); }
+.stepper-step.completed .stepper-icon svg {
+  color: var(--yellow);
 }
 
-@media (max-width: 768px) {
-  .steps {
-    flex-direction: column;
-    gap: 1.5rem;
+.stepper-step.completed .stepper-label {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+/* Connector line between steps */
+.stepper-connector {
+  flex: 1;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+  margin: 0 4px;
+  margin-bottom: 24px;
+  /* offset to align with icons center */
+  overflow: hidden;
+  position: relative;
+}
+
+.stepper-connector-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--yellow), var(--orange-light));
+  border-radius: 2px;
+  transition: width 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+/* Animated cycling: JS drives it, but pure-CSS fallback below */
+.stepper-connector.filled .stepper-connector-fill {
+  width: 100%;
+}
+
+/* Sub-labels (tooltip style) for desktop */
+.stepper-step .stepper-sublabel {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.35);
+  text-align: center;
+}
+
+@media (max-width: 520px) {
+  .stepper-card {
+    padding: 1.5rem 1rem;
   }
-  .steps::before,
-  .steps::after {
-    display: none;
+
+  .stepper-icon {
+    width: 46px;
+    height: 46px;
   }
-  .step {
-    width: 100%;
+
+  .stepper-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .stepper-label {
+    font-size: 0.72rem;
   }
 }
 
@@ -383,4 +354,3 @@ footer small {
   font-size: 0.78rem;
   color: rgba(255, 255, 255, 0.3);
 }
-

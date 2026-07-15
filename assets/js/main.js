@@ -16,10 +16,12 @@ revealEls.forEach(el => revealObserver.observe(el));
 document.addEventListener('DOMContentLoaded', () => {
   initReferralCode();
   initAuth();
+  initStepper();
 });
 if (document.readyState === 'interactive' || document.readyState === 'complete') {
   initReferralCode();
   initAuth();
+  initStepper();
 }
 
 function switchConverterTab(tabName) {
@@ -69,3 +71,37 @@ function navigateToTab(tabName) {
   }
   switchConverterTab(tabName);
 }
+
+/* ── STEPPER ANIMATION ── */
+function initStepper() {
+  const steps = document.querySelectorAll('.stepper-step');
+  const connectors = document.querySelectorAll('.stepper-connector');
+  if (!steps.length) return;
+
+  let currentStep = 0;
+  const STEP_DURATION = 2500; // ms per step
+
+  function goToStep(index) {
+    steps.forEach((step, i) => {
+      step.classList.remove('active', 'completed');
+      if (i < index) step.classList.add('completed');
+      if (i === index) step.classList.add('active');
+    });
+    connectors.forEach((conn, i) => {
+      const fill = conn.querySelector('.stepper-connector-fill');
+      if (fill) fill.style.width = i < index ? '100%' : '0%';
+    });
+    // Animate current connector filling
+    if (index > 0 && connectors[index - 1]) {
+      const fill = connectors[index - 1].querySelector('.stepper-connector-fill');
+      if (fill) { fill.style.width = '0%'; requestAnimationFrame(() => requestAnimationFrame(() => { fill.style.width = '100%'; })); }
+    }
+  }
+
+  goToStep(0);
+  setInterval(() => {
+    currentStep = (currentStep + 1) % steps.length;
+    goToStep(currentStep);
+  }, STEP_DURATION);
+}
+

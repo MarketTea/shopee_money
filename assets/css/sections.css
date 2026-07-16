@@ -1,27 +1,31 @@
 /* ── SECTION LABELS ── */
 .section-label {
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.8rem;
+  font-weight: 900;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--yellow);
+  color: #000;
   margin-bottom: 0.7rem;
+  background: var(--yellow);
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border: var(--border-thin);
 }
 
 .section-title {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-size: clamp(1.7rem, 3.2vw, 2.6rem);
-  font-weight: 700;
+  font-weight: 900;
   line-height: 1.15;
   letter-spacing: -0.025em;
   margin-bottom: 0.9rem;
-  color: #fff;
+  color: #000;
 }
 
 .section-sub {
   font-size: 0.98rem;
-  color: rgba(255, 255, 255, 0.72);
-  font-weight: 300;
+  color: #444;
+  font-weight: 600;
   max-width: 500px;
   line-height: 1.7;
 }
@@ -44,58 +48,52 @@
 }
 
 .feature-card {
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
+  background: #fff;
+  border: var(--border-thick);
   border-radius: var(--radius);
   padding: 1.8rem;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.15s, box-shadow 0.15s;
   position: relative;
   overflow: hidden;
 }
 
 .feature-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  display: none;
 }
 
 .feature-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(255, 255, 255, 0.35);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+  transform: translate(-4px, -4px);
+  box-shadow: var(--shadow-lg);
 }
 
 .feature-icon {
   width: 46px;
   height: 46px;
   border-radius: var(--radius-sm);
+  border: var(--border-thin);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.35rem;
   margin-bottom: 1.1rem;
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--yellow);
+  box-shadow: var(--shadow-sm);
 }
 
 .feature-card h3 {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: 800;
   margin-bottom: 0.5rem;
-  color: #fff;
+  color: #000;
 }
 
 .feature-card p {
   font-size: 0.88rem;
-  color: rgba(255, 255, 255, 0.72);
+  color: #444;
   line-height: 1.7;
-  font-weight: 300;
+  font-weight: 600;
 }
 
 /* ── HOW IT WORKS ── */
@@ -108,12 +106,11 @@
 /* Compact stepper card */
 .stepper-card {
   margin-top: 2.5rem;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 20px;
+  background: #fff;
+  border: var(--border-thick);
+  box-shadow: var(--shadow-lg);
+  border-radius: var(--radius);
   padding: 2rem 2.5rem;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
 }
 
 .stepper {
@@ -141,9 +138,10 @@
 .stepper-icon {
   width: 56px;
   height: 56px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-radius: var(--radius);
+  background: #fff;
+  border: var(--border-thin);
+  box-shadow: var(--shadow-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -155,15 +153,15 @@
 .stepper-icon svg {
   width: 22px;
   height: 22px;
-  color: rgba(255, 255, 255, 0.6);
+  color: #000;
   transition: color 0.4s;
 }
 
 .stepper-label {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-size: 0.82rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.55);
+  font-weight: 800;
+  color: #000;
   text-align: center;
   transition: color 0.4s;
   white-space: nowrap;
@@ -171,40 +169,41 @@
 
 /* Active step */
 .stepper-step.active .stepper-icon {
-  background: #fff;
-  border-color: var(--yellow);
+  background: var(--yellow);
+  border-color: #000;
   border-width: 3px;
-  box-shadow: 0 0 0 5px rgba(245, 166, 35, 0.28);
+  box-shadow: 4px 4px 0 #000;
+  transform: translate(-2px, -2px);
 }
 
 .stepper-step.active .stepper-icon svg {
-  color: var(--yellow);
+  color: #000;
 }
 
 .stepper-step.active .stepper-label {
-  color: rgba(255, 255, 255, 0.95);
-  font-weight: 600;
+  color: #000;
+  font-weight: 900;
 }
 
 /* Completed step (before active) */
 .stepper-step.completed .stepper-icon {
-  background: rgba(245, 166, 35, 0.15);
-  border-color: rgba(245, 166, 35, 0.45);
+  background: #fff;
+  border-color: #000;
 }
 
 .stepper-step.completed .stepper-icon svg {
-  color: var(--yellow);
+  color: #000;
 }
 
 .stepper-step.completed .stepper-label {
-  color: rgba(255, 255, 255, 0.65);
+  color: #444;
 }
 
 /* Connector line between steps */
 .stepper-connector {
   flex: 1;
-  height: 3px;
-  background: rgba(255, 255, 255, 0.12);
+  height: 4px;
+  background: #e2e8f0;
   border-radius: 2px;
   margin: 0 4px;
   margin-bottom: 24px;
@@ -216,7 +215,7 @@
 .stepper-connector-fill {
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, var(--yellow), var(--orange-light));
+  background: #000;
   border-radius: 2px;
   transition: width 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
@@ -264,74 +263,77 @@
 }
 
 .cta-card {
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 26px;
+  background: var(--yellow);
+  border: var(--border-thick);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
   padding: 3rem 2.5rem;
-  backdrop-filter: blur(20px);
 }
 
 .cta-card h2 {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-size: clamp(1.6rem, 2.8vw, 2.2rem);
-  font-weight: 700;
+  font-weight: 900;
   letter-spacing: -0.02em;
   margin-bottom: 0.7rem;
-  color: #fff;
+  color: #000;
 }
 
 .cta-card p {
   font-size: 0.97rem;
-  color: rgba(255, 255, 255, 0.72);
+  color: #000;
   margin-bottom: 2rem;
-  font-weight: 300;
+  font-weight: 600;
   line-height: 1.7;
 }
 
 .referral-code-box {
   display: inline-block;
   background: #fff;
-  color: var(--orange);
+  color: #000;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-size: clamp(1.4rem, 0.15vw, 2rem);
-  font-weight: 800;
+  font-weight: 900;
   padding: 0.75rem clamp(1.2rem, 5vw, 2.5rem);
-  border-radius: 14px;
+  border-radius: var(--radius-sm);
   letter-spacing: 0.08em;
   margin-bottom: 0.8rem;
-  border: 3px dashed var(--orange-light);
+  border: var(--border-thick);
+  box-shadow: var(--shadow-sm);
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+  transition: all 0.15s;
   user-select: none;
   max-width: 100%;
   box-sizing: border-box;
 }
 
 .referral-code-box:hover {
-  transform: translateY(-3px) scale(1.03);
-  box-shadow: 0 10px 25px rgba(254, 91, 53, 0.25);
-  background: #fffdfb;
-  border-color: var(--orange);
+  transform: translate(-3px, -3px);
+  box-shadow: var(--shadow-md);
+  background: #fff;
 }
 
 .referral-code-box:active {
-  transform: translateY(0) scale(0.98);
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 #000;
 }
 
 .ref-sub {
   font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: #444;
+  font-weight: 600;
 }
 
 /* ── FOOTER ── */
 footer {
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  border-top: var(--border-thick);
   padding: 2rem 5%;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 1rem;
+  background: #FFF;
 }
 
 .footer-links {
@@ -341,16 +343,20 @@ footer {
 
 .footer-links a {
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.55);
+  color: #444;
+  font-weight: 800;
   text-decoration: none;
-  transition: color 0.2s;
+  transition: all 0.15s;
 }
 
 .footer-links a:hover {
-  color: #fff;
+  color: #000;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
 }
 
 footer small {
   font-size: 0.78rem;
-  color: rgba(255, 255, 255, 0.3);
+  color: #666;
+  font-weight: 600;
 }

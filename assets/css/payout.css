@@ -10,12 +10,11 @@
 }
 
 .payout-panel {
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
+  background: #fff;
+  border: var(--border-thick);
+  box-shadow: var(--shadow-lg);
   border-radius: var(--radius);
   padding: 1.6rem;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
 }
 
 .payout-locked {
@@ -26,9 +25,9 @@
 }
 
 .payout-lock-title {
-  color: #fff;
-  font-size: 1rem;
-  font-weight: 700;
+  color: #000;
+  font-size: 1.1rem;
+  font-weight: 900;
   margin-bottom: 0.35rem;
 }
 
@@ -36,9 +35,10 @@
 .payout-help,
 .payout-file-name,
 .payout-uploaded-at {
-  color: rgba(255, 255, 255, 0.68);
+  color: #444;
   font-size: 0.82rem;
   line-height: 1.5;
+  font-weight: 600;
 }
 
 .payout-form {
@@ -66,21 +66,23 @@
 }
 
 .payout-fields label {
-  color: #fff;
+  color: #000;
   font-size: 0.88rem;
-  font-weight: 600;
+  font-weight: 800;
 }
 
 .payout-input,
 .payout-file {
   width: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  background: rgba(255, 255, 255, 0.96);
-  color: #1A0A05;
-  border-radius: 10px;
+  border: var(--border-thin);
+  background: #fff;
+  color: #000;
+  border-radius: var(--radius-sm);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-size: 0.92rem;
+  font-weight: 600;
   outline: none;
+  transition: all 0.15s;
 }
 
 .payout-input {
@@ -93,8 +95,8 @@
 
 .payout-input:focus,
 .payout-file:focus {
-  border-color: rgba(245, 166, 35, 0.9);
-  box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.16);
+  box-shadow: var(--shadow-sm);
+  transform: translate(-2px, -2px);
 }
 
 .payout-preview {
@@ -104,9 +106,9 @@
   justify-content: center;
   width: 100%;
   aspect-ratio: 1;
-  background: rgba(255, 255, 255, 0.96);
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  border-radius: 14px;
+  background: #fff;
+  border: var(--border-thick);
+  border-radius: var(--radius);
   overflow: hidden;
 }
 
@@ -182,13 +184,13 @@
 /* Dialog & Modal styling */
 .payout-dialog {
   display: none;
-  border: none;
-  border-radius: 20px;
+  border: var(--border-thick);
+  border-radius: var(--radius);
   padding: 0;
   background: #fff;
   max-width: 520px;
   width: 90%;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-lg);
 
   /* Centering positioning */
   margin: auto !important;
@@ -266,14 +268,15 @@
 
 .modal-content .payout-input,
 .modal-content .payout-file {
-  border: 1px solid #ccc;
+  border: var(--border-thin);
   background: #fff;
   color: #000;
   width: 100%;
   padding: 0.6rem;
   margin-top: 0.4rem;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 0.9rem;
+  box-shadow: 2px 2px 0 #000;
 }
 
 .modal-content .payout-preview {
@@ -295,19 +298,20 @@
   display: flex;
   align-items: center;
   gap: 1.2rem;
-  background: rgba(255, 255, 255, 0.08);
-  border: 2px dashed rgba(255, 255, 255, 0.25);
-  border-radius: 16px;
+  background: #fff;
+  border: var(--border-thick);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
   padding: 1.5rem;
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: all 0.15s ease;
   width: 100%;
 }
 
 .setup-prompt-box:hover {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: var(--yellow);
-  transform: translateY(-2px);
+  background: var(--yellow);
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-md);
 }
 
 .setup-prompt-icon {
@@ -339,9 +343,10 @@
 }
 
 .payout-summary-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.06) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 14px;
+  background: #fff;
+  border: var(--border-thick);
+  box-shadow: var(--shadow-lg);
+  border-radius: var(--radius);
   padding: 1.2rem 1.6rem;
   text-align: left;
   display: flex;
@@ -351,16 +356,17 @@
 }
 
 .summary-label {
-  color: rgba(255, 255, 255, 0.75);
+  color: #000;
   font-size: 0.85rem;
-  font-weight: 500;
+  font-weight: 800;
   margin-bottom: 0.4rem;
 }
 
 .summary-amount {
-  color: var(--yellow);
+  color: var(--orange);
   font-size: 2rem;
-  font-weight: 800;
+  font-weight: 900;
+  text-shadow: 2px 2px 0 #000;
 }
 
 .payout-orders-section {
@@ -368,9 +374,9 @@
 }
 
 .orders-header {
-  color: #fff;
+  color: #000;
   font-size: 0.95rem;
-  font-weight: 700;
+  font-weight: 900;
   margin-bottom: 0.75rem;
 }
 
@@ -398,9 +404,9 @@
 }
 
 .payout-order-row {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+  background: #fff;
+  border: var(--border-thin);
+  border-radius: var(--radius-sm);
   padding: 0.75rem 0.9rem;
   display: flex;
   justify-content: space-between;
@@ -416,17 +422,18 @@
 }
 
 .payout-order-name {
-  color: #fff;
+  color: #000;
   font-size: 0.82rem;
-  font-weight: 600;
+  font-weight: 800;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .payout-order-meta {
-  color: rgba(255, 255, 255, 0.5);
+  color: #444;
   font-size: 0.72rem;
+  font-weight: 600;
 }
 
 .payout-order-right {
@@ -438,9 +445,9 @@
 }
 
 .payout-order-amount {
-  color: var(--yellow);
+  color: var(--orange);
   font-size: 0.86rem;
-  font-weight: 700;
+  font-weight: 900;
 }
 
 .payout-order-status {
@@ -457,9 +464,10 @@
 }
 
 .payout-qr-card {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 14px;
+  background: #fff;
+  border: var(--border-thick);
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius);
   padding: 1rem;
   display: flex;
   flex-direction: column;
@@ -468,9 +476,9 @@
 }
 
 .payout-qr-title {
-  color: #fff;
+  color: #000;
   font-size: 0.82rem;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .payout-qr-image-container {
@@ -492,25 +500,29 @@
 }
 
 .btn-update-qr {
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  color: #fff;
-  border-radius: 10px;
+  background: #fff;
+  border: var(--border-thin);
+  box-shadow: 2px 2px 0 #000;
+  color: #000;
+  border-radius: var(--radius-sm);
   padding: 0.65rem 1.3rem;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-size: 0.82rem;
-  font-weight: 600;
+  font-weight: 800;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.165, 0.84, 0.44, 1);
+  transition: all 0.1s;
   flex-shrink: 0;
   white-space: nowrap;
 }
 
 .btn-update-qr:hover {
   background: var(--yellow);
-  color: #1A0A05;
-  border-color: var(--yellow);
-  box-shadow: 0 4px 15px rgba(245, 166, 35, 0.3);
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 #000;
+}
+.btn-update-qr:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 #000;
 }
 
 /* ── PAYOUT SUMMARY ACTIONS ── */

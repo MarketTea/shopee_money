@@ -7,11 +7,11 @@
 }
 
 :root {
-  --orange: #FF1E16;
-  --orange-dark: #E6120B;
-  --orange-deep: #B80A04;
-  --orange-light: #FF5614;
-  --orange-pale: #FFF0EE;
+  --orange: #ee4d2d;
+  --orange-dark: #d73d20;
+  --orange-deep: #b42d13;
+  --orange-light: #f06d4e;
+  --orange-pale: #fff1ee;
   --yellow: #FFDE00;
   --navy: #1A1A2E;
   --bg: #FFF4E0;
@@ -65,4 +65,3 @@ footer {
   position: relative;
   z-index: 1;
 }
-

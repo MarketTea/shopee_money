@@ -47,7 +47,7 @@ async function convertLink() {
 
     if (needsResolve(rawUrl)) {
       // Resolve redirect qua Redirect Checker API (chạy trực tiếp dưới client, không bị CORS block)
-      label.textContent = 'Đang resolve link…';
+      label.textContent = 'Đang chuyển link';
       try {
         finalUrl = await resolveShortUrl(rawUrl);
       } catch (e) {
@@ -65,13 +65,18 @@ async function convertLink() {
     const openBtn = document.getElementById('shopeeOpenBtn');
     openBtn.href = affLink;
     openBtn.onclick = () => trackAffiliateClick(currentAffiliateLinkId);
-    resultLink.textContent = affLink;
+    if (resultLink) {
+      resultLink.textContent = affLink;
+    }
     resultBox.classList.add('show');
     loadLinkHistory();
 
     const copyBtn = document.getElementById('copyBtn');
-    copyBtn.textContent = 'Sao chép';
-    copyBtn.classList.remove('copied');
+    if (copyBtn) {
+      copyBtn.dataset.link = affLink;
+      copyBtn.textContent = 'Sao chép';
+      copyBtn.classList.remove('copied');
+    }
 
   } catch (err) {
     showError(`Không convert được link: ${err.message}`);
@@ -90,8 +95,12 @@ function showError(msg) {
 }
 
 async function copyLink() {
-  const link = document.getElementById('resultLink').textContent;
   const btn = document.getElementById('copyBtn');
+  const resultLinkEl = document.getElementById('resultLink');
+  const link = btn.dataset.link || (resultLinkEl ? resultLinkEl.textContent : '');
+
+  if (!link) return;
+
   try {
     await navigator.clipboard.writeText(link);
     btn.textContent = 'Đã chép!';
@@ -102,11 +111,22 @@ async function copyLink() {
     }, 2500);
   } catch {
     // Fallback select
-    const range = document.createRange();
-    const el = document.getElementById('resultLink');
-    range.selectNodeContents(el);
-    window.getSelection().removeAllRanges();
-    window.getSelection().addRange(range);
+    const tempInput = document.createElement('input');
+    tempInput.value = link;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    try {
+      document.execCommand('copy');
+      btn.textContent = 'Đã chép!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Sao chép';
+        btn.classList.remove('copied');
+      }, 2500);
+    } catch (e) {
+      console.error('Fallback copy failed', e);
+    }
+    document.body.removeChild(tempInput);
   }
 }
 

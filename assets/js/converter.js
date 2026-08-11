@@ -68,13 +68,43 @@ async function convertLink() {
     if (resultLink) {
       resultLink.textContent = affLink;
     }
+
+    // Update Commission Card UI
+    const resultProductName = document.getElementById('resultProductName');
+    const resultProductImage = document.getElementById('resultProductImage');
+    const resultProductLink = document.getElementById('resultProductLink');
+    const resultCommission = document.getElementById('resultCommission');
+    const resultCommissionRate = document.getElementById('resultCommissionRate');
+
+    if (resultProductName) {
+      resultProductName.textContent = trackedLink.product_name || 'Sản phẩm Shopee';
+    }
+    if (resultProductImage) {
+      resultProductImage.src = trackedLink.product_image || 'assets/images/logo.png';
+    }
+    if (resultProductLink) {
+      resultProductLink.textContent = affLink;
+    }
+    if (resultCommission) {
+      resultCommission.textContent = trackedLink.commission || trackedLink.estimated_commission || 'Chưa xác định';
+    }
+    if (resultCommissionRate) {
+      const rate = trackedLink.rate || trackedLink.commission_rate;
+      if (rate) {
+        resultCommissionRate.textContent = String(rate).endsWith('%') ? rate : `${rate}%`;
+        resultCommissionRate.style.display = 'inline-block';
+      } else {
+        resultCommissionRate.style.display = 'none';
+      }
+    }
+
     resultBox.classList.add('show');
     loadLinkHistory();
 
     const copyBtn = document.getElementById('copyBtn');
     if (copyBtn) {
       copyBtn.dataset.link = affLink;
-      copyBtn.textContent = 'Sao chép';
+      copyBtn.textContent = 'Copy link';
       copyBtn.classList.remove('copied');
     }
 
@@ -103,12 +133,12 @@ async function copyLink() {
 
   try {
     await navigator.clipboard.writeText(link);
-    btn.textContent = 'Đã chép!';
-    btn.classList.add('copied');
-    setTimeout(() => {
-      btn.textContent = 'Sao chép';
-      btn.classList.remove('copied');
-    }, 2500);
+      btn.textContent = 'Đã chép!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy link';
+        btn.classList.remove('copied');
+      }, 2500);
   } catch {
     // Fallback select
     const tempInput = document.createElement('input');
@@ -120,7 +150,7 @@ async function copyLink() {
       btn.textContent = 'Đã chép!';
       btn.classList.add('copied');
       setTimeout(() => {
-        btn.textContent = 'Sao chép';
+        btn.textContent = 'Copy link';
         btn.classList.remove('copied');
       }, 2500);
     } catch (e) {

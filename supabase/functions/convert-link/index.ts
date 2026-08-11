@@ -123,7 +123,7 @@ Deno.serve(async (req) => {
         product_name: convertedLink.productName,
         product_image: convertedLink.productImage,
       })
-      .select("id, sub_id, affiliate_url, normalized_url, estimated_commission, commission_rate, created_at")
+      .select("id, sub_id, affiliate_url, normalized_url, estimated_commission, commission_rate, product_name, product_image, created_at")
       .single();
 
     if (insertError) {

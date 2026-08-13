@@ -27,19 +27,23 @@ if (document.readyState === 'interactive' || document.readyState === 'complete')
 function switchConverterTab(tabName) {
   const tabBtnConvert = document.getElementById('tabBtnConvert');
   const tabBtnHistory = document.getElementById('tabBtnHistory');
+  const tabBtnReferral = document.getElementById('tabBtnReferral');
   const tabBtnPayout = document.getElementById('tabBtnPayout');
   const tabContentConvert = document.getElementById('tabContentConvert');
   const tabContentHistory = document.getElementById('tabContentHistory');
+  const tabContentReferral = document.getElementById('tabContentReferral');
   const tabContentPayout = document.getElementById('tabContentPayout');
 
-  if (!tabBtnConvert || !tabBtnHistory || !tabBtnPayout || !tabContentConvert || !tabContentHistory || !tabContentPayout) return;
+  if (!tabBtnConvert || !tabBtnHistory || !tabBtnReferral || !tabBtnPayout || !tabContentConvert || !tabContentHistory || !tabContentReferral || !tabContentPayout) return;
 
   // Reset active classes
   tabBtnConvert.classList.remove('active');
   tabBtnHistory.classList.remove('active');
+  tabBtnReferral.classList.remove('active');
   tabBtnPayout.classList.remove('active');
   tabContentConvert.classList.remove('active');
   tabContentHistory.classList.remove('active');
+  tabContentReferral.classList.remove('active');
   tabContentPayout.classList.remove('active');
 
   if (tabName === 'convert') {
@@ -60,6 +64,13 @@ function switchConverterTab(tabName) {
     // Automatically load payout profile when clicking the tab if user is logged in
     if (typeof loadPayoutProfile === 'function' && currentUser) {
       loadPayoutProfile();
+    }
+  } else if (tabName === 'referral') {
+    tabBtnReferral.classList.add('active');
+    tabContentReferral.classList.add('active');
+
+    if (typeof loadReferralStats === 'function' && currentUser) {
+      loadReferralStats();
     }
   }
 }

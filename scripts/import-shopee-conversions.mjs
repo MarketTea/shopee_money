@@ -119,6 +119,11 @@ try {
     ? await upsert('orders', ordersToUpsert, 'shopee_order_id')
     : [];
 
+  if (upsertedOrders.length) {
+    const orderIds = upsertedOrders.map((o) => o.id);
+    await rest('POST', '/rpc/process_referral_rewards', { p_order_ids: orderIds });
+  }
+
   const ledgerPayloads = upsertedOrders
     .filter((order) => order.status !== 'paid')
     .map((order) => ({

@@ -281,6 +281,20 @@ async function submitWithdrawRequest() {
 
     if (error) throw error;
 
+    // Reset bonus_balance về 0 sau khi đã gộp vào lần rút này
+    // Nếu không reset, lần rút tiếp theo sẽ cộng bonus lần nữa (bug double-count)
+    if (_withdrawBonusBalance > 0) {
+      const { error: bonusResetError } = await supabaseClient
+        .from('profiles')
+        .update({ bonus_balance: 0 })
+        .eq('id', currentUser.id);
+
+      if (bonusResetError) {
+        console.error('Không thể reset bonus_balance:', bonusResetError);
+        // Không throw — withdrawal đã được tạo thành công, lỗi phụ không nên block UX
+      }
+    }
+
     showWithdrawStatus(
       `✅ Đã gửi yêu cầu rút ${formatCurrency(totalAvailableForUser)} thành công! Admin sẽ xử lý sớm.`,
       'success'

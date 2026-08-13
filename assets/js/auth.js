@@ -6,6 +6,13 @@ async function initAuth() {
   const loginBtn = document.getElementById('loginBtn');
   const convertBtn = document.getElementById('convertBtn');
 
+  // Bắt referral code từ URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const refCode = urlParams.get('ref');
+  if (refCode) {
+    localStorage.setItem('referralCode', refCode);
+  }
+
   if (!supabaseClient) {
     warning.classList.add('show');
     warning.textContent = SUPABASE_READY
@@ -25,15 +32,58 @@ async function initAuth() {
 }
 
 function setCurrentUser(user) {
+  const previousUser = currentUser;
   currentUser = user;
   updateAuthUi();
   updatePayoutUi();
+  
   if (currentUser) {
     loadLinkHistory();
     loadPayoutProfile();
+    
+    if (typeof loadReferralStats === 'function') {
+      loadReferralStats();
+    }
+
+    // Nếu vừa login thành công (trước đó là null, giờ có user)
+    if (!previousUser) {
+      applyPendingReferral();
+    }
   } else {
     renderHistory([]);
     resetPayoutForm();
+  }
+}
+
+async function applyPendingReferral() {
+  const refCode = localStorage.getItem('referralCode');
+  if (!refCode || !supabaseClient) return;
+
+  try {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) return;
+
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/apply-referral`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`
+      },
+      body: JSON.stringify({ referral_code: refCode })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log('Applied referral successfully:', data);
+      localStorage.removeItem('referralCode');
+    } else {
+      const err = await response.json();
+      console.warn('Failed to apply referral:', err);
+      // Xóa luôn để không thử lại mãi nếu lỗi (VD: không phải user mới)
+      localStorage.removeItem('referralCode');
+    }
+  } catch (error) {
+    console.error('Error applying referral:', error);
   }
 }
 

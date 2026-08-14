@@ -7,6 +7,14 @@ function escapeHtml(value) {
     .replace(/'/g, '&#039;');
 }
 
+function formatCurrency(value) {
+  const number = Number(value) || 0;
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND'
+  }).format(number).replace('₫', 'đ');
+}
+
 function showToast(message) {
   const toast = document.createElement('div');
   toast.className = 'custom-toast';
@@ -22,3 +30,4 @@ function showToast(message) {
     setTimeout(() => toast.remove(), 400);
   }, 3000);
 }
+

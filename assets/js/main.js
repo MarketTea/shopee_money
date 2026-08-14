@@ -1,6 +1,9 @@
-document.getElementById('shopeeLink').addEventListener('keydown', e => {
-  if (e.key === 'Enter') convertLink();
-});
+const shopeeLinkEl = document.getElementById('shopeeLink');
+if (shopeeLinkEl) {
+  shopeeLinkEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter') convertLink();
+  });
+}
 
 /* ── SCROLL REVEAL ── */
 const revealEls = document.querySelectorAll('.reveal');
@@ -13,37 +16,42 @@ const revealObserver = new IntersectionObserver((entries) => {
   });
 }, { threshold: 0.1 });
 revealEls.forEach(el => revealObserver.observe(el));
+
 document.addEventListener('DOMContentLoaded', () => {
-  initReferralCode();
-  initAuth();
-  initStepper();
+  if (typeof initReferralCode === 'function') initReferralCode();
+  if (typeof initAuth === 'function') initAuth();
+  if (typeof initStepper === 'function') initStepper();
+
+  // Check URL query parameters for tab navigation (e.g. index.html?tab=payout)
+  const urlParams = new URLSearchParams(window.location.search);
+  const tabParam = urlParams.get('tab');
+  if (tabParam) {
+    switchConverterTab(tabParam);
+  }
 });
+
 if (document.readyState === 'interactive' || document.readyState === 'complete') {
-  initReferralCode();
-  initAuth();
-  initStepper();
+  if (typeof initReferralCode === 'function') initReferralCode();
+  if (typeof initAuth === 'function') initAuth();
+  if (typeof initStepper === 'function') initStepper();
 }
 
 function switchConverterTab(tabName) {
   const tabBtnConvert = document.getElementById('tabBtnConvert');
   const tabBtnHistory = document.getElementById('tabBtnHistory');
-  const tabBtnReferral = document.getElementById('tabBtnReferral');
   const tabBtnPayout = document.getElementById('tabBtnPayout');
   const tabContentConvert = document.getElementById('tabContentConvert');
   const tabContentHistory = document.getElementById('tabContentHistory');
-  const tabContentReferral = document.getElementById('tabContentReferral');
   const tabContentPayout = document.getElementById('tabContentPayout');
 
-  if (!tabBtnConvert || !tabBtnHistory || !tabBtnReferral || !tabBtnPayout || !tabContentConvert || !tabContentHistory || !tabContentReferral || !tabContentPayout) return;
+  if (!tabBtnConvert || !tabBtnHistory || !tabBtnPayout || !tabContentConvert || !tabContentHistory || !tabContentPayout) return;
 
   // Reset active classes
   tabBtnConvert.classList.remove('active');
   tabBtnHistory.classList.remove('active');
-  tabBtnReferral.classList.remove('active');
   tabBtnPayout.classList.remove('active');
   tabContentConvert.classList.remove('active');
   tabContentHistory.classList.remove('active');
-  tabContentReferral.classList.remove('active');
   tabContentPayout.classList.remove('active');
 
   if (tabName === 'convert') {
@@ -65,15 +73,9 @@ function switchConverterTab(tabName) {
     if (typeof loadPayoutProfile === 'function' && currentUser) {
       loadPayoutProfile();
     }
-  } else if (tabName === 'referral') {
-    tabBtnReferral.classList.add('active');
-    tabContentReferral.classList.add('active');
-
-    if (typeof loadReferralStats === 'function' && currentUser) {
-      loadReferralStats();
-    }
   }
 }
+
 
 function navigateToTab(tabName) {
   const target = document.getElementById('convert');
@@ -115,4 +117,91 @@ function initStepper() {
     goToStep(currentStep);
   }, STEP_DURATION);
 }
+
+/* ── MOBILE DRAWER ── */
+function updateDrawerUser() {
+  const userPill = document.getElementById('drawerUserCard');
+  const loginPill = document.getElementById('drawerLoginCard');
+  const avatar = document.getElementById('drawerUserAvatar');
+  const nameEl = document.getElementById('drawerUserName');
+  const emailEl = document.getElementById('drawerUserEmail');
+
+  if (!userPill) return;
+
+  if (currentUser) {
+    const meta = currentUser.user_metadata || {};
+    const name = meta.full_name || meta.name || 'Người dùng';
+    const email = currentUser.email || '';
+    const pic = meta.avatar_url || meta.picture || 'assets/images/logo.png';
+
+    if (avatar) avatar.src = pic;
+    if (nameEl) nameEl.textContent = name;
+    if (emailEl) emailEl.textContent = email;
+
+    userPill.classList.add('is-logged-in');
+    if (loginPill) loginPill.classList.add('is-hidden');
+  } else {
+    userPill.classList.remove('is-logged-in');
+    if (loginPill) loginPill.classList.remove('is-hidden');
+  }
+}
+
+function toggleUserMenu(event) {
+  if (event) event.stopPropagation();
+  const menu = document.getElementById('drawerUserDropdown');
+  if (menu) {
+    menu.classList.toggle('show');
+  }
+}
+
+// Close user dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('drawerUserDropdown');
+  const pill = document.getElementById('drawerUserCard');
+  if (menu && menu.classList.contains('show')) {
+    if (pill && !pill.contains(e.target)) {
+      menu.classList.remove('show');
+    }
+  }
+});
+
+function openDrawer() {
+  const drawer = document.getElementById('mobileDrawer');
+  const overlay = document.getElementById('drawerOverlay');
+  const btn = document.getElementById('hamburgerBtn');
+  if (!drawer) return;
+  updateDrawerUser();
+  drawer.classList.add('is-open');
+  if (overlay) overlay.classList.add('is-open');
+  if (btn) btn.classList.add('is-open');
+  document.documentElement.style.overflow = 'hidden';
+}
+
+function closeDrawer() {
+  const drawer = document.getElementById('mobileDrawer');
+  const overlay = document.getElementById('drawerOverlay');
+  const btn = document.getElementById('hamburgerBtn');
+  if (!drawer) return;
+  drawer.classList.remove('is-open');
+  if (overlay) overlay.classList.remove('is-open');
+  if (btn) btn.classList.remove('is-open');
+  document.documentElement.style.overflow = '';
+}
+
+// Close drawer on Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeDrawer();
+});
+
+// Highlight active drawer link based on current page
+(function markActiveDrawerLink() {
+  const links = document.querySelectorAll('.drawer-nav a');
+  const current = window.location.pathname.split('/').pop() || 'index.html';
+  links.forEach(link => {
+    const href = link.getAttribute('href');
+    if (href && href !== 'javascript:void(0)' && current === href) {
+      link.classList.add('active');
+    }
+  });
+})();
 

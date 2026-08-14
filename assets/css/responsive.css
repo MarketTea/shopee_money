@@ -1,17 +1,26 @@
 /* ── RESPONSIVE ── */
 @media (max-width: 992px) {
-  nav a {
+  .desktop-nav a {
     margin-left: 1.2rem;
   }
 }
 
+
 @media (max-width: 768px) {
-  nav a:not(.nav-cta) {
-    display: none;
+  /* Hide desktop nav, show hamburger */
+  .desktop-nav {
+    display: none !important;
+  }
+
+  /* Show hamburger - must use !important to override the default display:none !important */
+  .hamburger-btn {
+    display: flex !important;
   }
 
   header {
-    padding: 1rem 4%;
+    padding: 0.75rem 4%;
+    gap: 12px;
+    justify-content: flex-start;
   }
 
   .hero {
@@ -94,16 +103,6 @@
     flex-direction: column;
   }
 
-  .cta-card {
-    padding: 2rem 1.3rem;
-  }
-
-  .referral-code-box {
-    font-size: 1.25rem;
-    padding: 0.65rem 1.5rem;
-    letter-spacing: 0.05em;
-  }
-
   footer {
     flex-direction: column;
     text-align: center;
@@ -112,30 +111,20 @@
 
 @media (max-width: 480px) {
   .logo {
-    font-size: 1.15rem;
+    font-size: 1.1rem;
   }
 
   .logo-img {
-    height: 38px;
-  }
-
-  .nav-cta {
-    padding: 0.4rem 0.9rem;
-    font-size: 0.82rem !important;
+    height: 36px;
   }
 }
 
 @media (max-width: 360px) {
   header {
-    padding: 0.8rem 3%;
+    padding: 0.7rem 3%;
   }
 
   .logo {
-    font-size: 1.05rem;
-  }
-
-  .nav-cta {
-    padding: 0.35rem 0.8rem;
-    font-size: 0.78rem !important;
+    font-size: 1rem;
   }
 }

@@ -47,14 +47,19 @@
 
 .hero h1 {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  font-size: clamp(2.6rem, 6vw, 4.6rem);
+  font-size: clamp(1.6rem, 6.5vw, 4.6rem);
   font-weight: 900;
-  line-height: 1.08;
+  line-height: 1.12;
   letter-spacing: -0.03em;
   margin-bottom: 1.2rem;
   color: var(--orange);
   text-shadow: 3px 3px 0 #000;
   animation: fadeUp 0.6s 0.1s ease both;
+}
+
+.hero h1 .hero-title-line {
+  display: inline-block;
+  white-space: nowrap;
 }
 
 .hero h1 .yellow {

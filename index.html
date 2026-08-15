@@ -36,7 +36,7 @@
         onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">Tính năng</a>
       <a href="javascript:void(0)" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">Cách
         hoạt động</a>
-      <a href="referral.html">Giới thiệu</a>
+      <a href="referral.html">Mời bạn bè</a>
       <a href="javascript:void(0)" onclick="navigateToTab('payout')">QR nhận tiền</a>
       <a href="javascript:void(0)" onclick="navigateToTab('convert')" class="nav-cta">Chuyển Link</a>
     </nav>
@@ -76,14 +76,14 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
-        Giới thiệu
+        Mời bạn bè
       </a>
       <a href="javascript:void(0)" onclick="closeDrawer(); navigateToTab('payout')">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
         </svg>
-        QR nhận tiền
+        Hoàn tiền
       </a>
     </nav>
 
@@ -142,7 +142,8 @@
   <!-- HERO -->
   <section class="hero" id="convert">
     <div class="badge"><span class="dot"></span> HoanTienNgay — Chia sẻ nhiều hơn, Thu nhập lớn hơn</div>
-    <h1>Chia sẻ. Kiếm tiền.<br><span class="yellow">Nhận hoàn tiền.</span></h1>
+    <h1><span class="hero-title-line">Chia sẻ. Kiếm tiền.</span><br><span class="hero-title-line yellow">Nhận hoàn
+        tiền.</span></h1>
     <p class="sub">💰 Hoàn tiền lên đến 50% cho mỗi đơn hàng Shopee thành công — mua sắm như bình thường, nhận lại tiền
       thật sau mỗi lần thanh toán.</p>
 
@@ -510,6 +511,65 @@
           <div class="withdraw-history-list" id="withdrawHistoryList">
             <div class="history-empty">Đang tải...</div>
           </div>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Dialog: Promo Mời Bạn Bè -->
+  <dialog id="referralPromoModal" class="payout-dialog promo-dialog">
+    <div class="promo-modal-wrapper">
+      <!-- Promo Header -->
+      <div class="promo-header">
+        <button class="promo-close-btn" onclick="closeReferralPromoModal()" type="button"
+          aria-label="Đóng">&times;</button>
+        <div class="promo-badge-icon">
+          <img src="assets/images/logo.png" alt="HoanTienNgay" class="promo-logo-img" />
+          <span class="promo-gift-tag">🎁 +20.000đ</span>
+        </div>
+        <h2 class="promo-title">Mời Bạn Bè — Cùng Kiếm Tiền!</h2>
+        <p class="promo-subtitle">Nhận ngay <strong>20.000đ</strong> vào ví và hưởng hoa hồng không giới hạn cùng
+          HoanTienNgay.</p>
+      </div>
+
+      <!-- Promo Body -->
+      <div class="promo-body">
+        <div class="promo-feature-list">
+          <div class="promo-feature-item">
+            <div class="promo-feature-icon">🎁</div>
+            <div class="promo-feature-text">
+              <strong>Tặng ngay 20.000đ vào ví</strong>
+              <span>Cộng tiền tự động khi đăng ký tài khoản thành công qua mã giới thiệu.</span>
+            </div>
+          </div>
+
+          <div class="promo-feature-item">
+            <div class="promo-feature-icon">💸</div>
+            <div class="promo-feature-text">
+              <strong>Hoa hồng trọn đời không giới hạn</strong>
+              <span>Tự động nhận hoa hồng từ mỗi đơn hàng Shopee của bạn bè.</span>
+            </div>
+          </div>
+
+          <div class="promo-feature-item">
+            <div class="promo-feature-icon">⚡</div>
+            <div class="promo-feature-text">
+              <strong>Rút tiền dễ dàng về tài khoản</strong>
+              <span>Rút tiền nhanh chóng về tài khoản ngân hàng hoặc ví qua mã QR.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Promo Actions -->
+        <div class="promo-actions">
+          <a href="referral.html" class="btn-convert promo-cta-btn">
+            <span>Mời ngay</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </a>
+          <button class="promo-later-btn" onclick="closeReferralPromoModal()" type="button">Để sau</button>
         </div>
       </div>
     </div>

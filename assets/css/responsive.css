@@ -24,7 +24,12 @@
   }
 
   .hero {
-    padding: 4rem 5% 3rem;
+    padding: 3rem 4% 2.5rem;
+  }
+
+  .hero h1 {
+    font-size: clamp(1.45rem, 6.8vw, 2.5rem);
+    text-shadow: 2px 2px 0 #000;
   }
 
   .converter-box {
@@ -117,6 +122,28 @@
   .logo-img {
     height: 36px;
   }
+
+  .promo-dialog {
+    width: 94%;
+    border-radius: 16px;
+  }
+
+  .promo-header {
+    padding: 1.8rem 1.2rem 1.3rem;
+  }
+
+  .promo-logo-img {
+    width: 58px;
+    height: 58px;
+  }
+
+  .promo-title {
+    font-size: 1.18rem;
+  }
+
+  .promo-body {
+    padding: 1.1rem 1.1rem 1rem;
+  }
 }
 
 @media (max-width: 360px) {
@@ -126,5 +153,29 @@
 
   .logo {
     font-size: 1rem;
+  }
+
+  .hero h1 {
+    font-size: clamp(1.2rem, 6.2vw, 1.45rem);
+  }
+
+  .promo-header {
+    padding: 1.5rem 1rem 1.1rem;
+  }
+
+  .promo-title {
+    font-size: 1.05rem;
+  }
+
+  .promo-subtitle {
+    font-size: 0.8rem;
+  }
+
+  .promo-feature-text strong {
+    font-size: 0.85rem;
+  }
+
+  .promo-feature-text span {
+    font-size: 0.75rem;
   }
 }

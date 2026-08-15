@@ -38,11 +38,16 @@
     }
 
     .referral-page-hero h1 {
-      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-size: clamp(1.5rem, 5.5vw, 2.8rem);
       font-weight: 900;
       letter-spacing: -0.03em;
       line-height: 1.2;
       margin-bottom: 0.8rem;
+    }
+
+    .referral-page-hero h1 .ref-title-line {
+      display: inline-block;
+      white-space: nowrap;
     }
 
     .referral-page-hero h1 .yellow {
@@ -189,7 +194,7 @@
     <nav class="desktop-nav">
       <a href="index.html#features">Tính năng</a>
       <a href="index.html#how">Cách hoạt động</a>
-      <a href="referral.html" class="nav-active-link">Giới thiệu</a>
+      <a href="referral.html" class="nav-active-link">Mời bạn bè</a>
       <a href="index.html?tab=payout">QR nhận tiền</a>
       <a href="index.html?tab=convert" class="nav-cta">Chuyển Link</a>
     </nav>
@@ -227,7 +232,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
-        Giới thiệu
+        Mời bạn bè
       </a>
       <a href="index.html?tab=payout" onclick="closeDrawer()">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -294,7 +299,8 @@
     <div class="page-badge">
       <span>&#127873;</span> Chương trình Giới thiệu
     </div>
-    <h1>Giới thiệu bạn bè.<br><span class="yellow">Cùng kiếm tiền.</span></h1>
+    <h1><span class="ref-title-line">Giới thiệu bạn bè.</span><br><span class="ref-title-line yellow">Cùng kiếm
+        tiền.</span></h1>
     <p class="sub">Bạn mới tham gia nhận ngay <strong>+20.000đ</strong> vào ví sau khi đăng ký thành công.</p>
   </div>
 

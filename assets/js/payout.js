@@ -1,11 +1,14 @@
 function updatePayoutUi() {
+  const payoutPanel = document.getElementById('payoutPanel');
   const payoutSetupPrompt = document.getElementById('payoutSetupPrompt');
   const payoutDashboard = document.getElementById('payoutDashboard');
 
   if (currentUser) {
+    if (payoutPanel) payoutPanel.style.display = 'block';
     return;
   }
 
+  if (payoutPanel) payoutPanel.style.display = 'none';
   if (payoutSetupPrompt) payoutSetupPrompt.style.display = 'none';
   if (payoutDashboard) payoutDashboard.style.display = 'none';
   closePayoutModal();
@@ -52,8 +55,10 @@ async function loadPayoutProfile() {
     .eq('id', currentUser.id)
     .maybeSingle();
 
+  const payoutPanel = document.getElementById('payoutPanel');
   const payoutSetupPrompt = document.getElementById('payoutSetupPrompt');
   const payoutDashboard = document.getElementById('payoutDashboard');
+  if (payoutPanel) payoutPanel.style.display = 'block';
 
   if (error) {
     showPayoutStatus('Không tải được thông tin nhận tiền. Hãy kiểm tra RLS/schema Supabase.', 'error');

@@ -63,12 +63,6 @@
       max-width: 580px;
     }
 
-    .refund-auth-panel {
-      max-width: 860px;
-      margin: 0 auto;
-      padding: 0 5% 2rem;
-    }
-
     .refund-main-content {
       max-width: 860px;
       margin: 0 auto;
@@ -120,6 +114,13 @@
     </div>
 
     <nav class="drawer-nav">
+      <a href="index.html" onclick="closeDrawer()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+        </svg>
+        Chuyển Link
+      </a>
       <a href="index.html#features" onclick="closeDrawer()">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -145,7 +146,14 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
         </svg>
-        Hoàn Tiền
+        Hoàn tiền
+      </a>
+      <a href="https://zalo.me/0964340391" target="_blank" rel="noopener noreferrer">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
+        Liên hệ
       </a>
     </nav>
 
@@ -211,13 +219,13 @@
   </div>
 
   <!-- AUTH PANEL -->
-  <div class="refund-auth-panel" id="refAuthPanel" style="display:none;">
+  <div class="ref-auth-panel" id="refAuthPanel" style="display:none;">
     <div class="ref-auth-card">
       <div class="ref-auth-copy">
         <div class="auth-title">Đăng nhập để xem và rút tiền hoàn</div>
         <div class="auth-status">Cài đặt thông tin nhận tiền, theo dõi đơn hàng và rút hoa hồng về tài khoản của bạn.
         </div>
-        <div class="auth-bonus-badge">🎁 Đăng nhập lần đầu nhận ngay <strong>20.000đ</strong> vào ví!</div>
+        <div class="auth-bonus-badge">&#127873; Đăng ký lần đầu nhận ngay <strong>20.000đ</strong>!</div>
       </div>
       <div class="ref-auth-actions">
         <button class="btn-auth" id="refLoginBtn" onclick="signInWithGoogle()" type="button">Đăng nhập Google</button>
@@ -231,7 +239,7 @@
   <div class="refund-main-content">
     <!-- Payout Dashboard Section -->
     <div class="refund-dashboard-wrapper">
-      <div class="payout-panel" id="payoutPanel">
+      <div class="payout-panel" id="payoutPanel" style="display:none;">
         <!-- Logged In: Not Setup QR State -->
         <div id="payoutSetupPrompt" class="payout-setup-prompt"
           style="display:none; justify-content: center; align-items: center; padding: 2.5rem 1rem;">
@@ -258,19 +266,25 @@
 
             <div class="payout-orders-section">
               <div class="payout-orders-header-row">
-                <div class="orders-header">Chi tiết đơn hàng nhận hoàn tiền</div>
+                <div class="orders-header">Chi tiết đơn</div>
                 <div class="order-filter-dropdown" id="orderFilterDropdown">
-                  <button class="order-filter-btn" id="orderFilterBtn" type="button" onclick="toggleOrderFilter(event)" aria-expanded="false" aria-label="Lọc trạng thái đơn hàng">
+                  <button class="order-filter-btn" id="orderFilterBtn" type="button" onclick="toggleOrderFilter(event)"
+                    aria-expanded="false" aria-label="Lọc trạng thái đơn hàng">
                     <span id="orderFilterSelectedLabel">Tất cả</span>
-                    <svg class="order-filter-chevron" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <svg class="order-filter-chevron" viewBox="0 0 24 24" width="16" height="16" fill="none"
+                      stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                       <polyline points="6 9 12 15 18 9"></polyline>
                     </svg>
                   </button>
                   <div class="order-filter-menu" id="orderFilterMenu">
-                    <div class="order-filter-option active" data-status="all" onclick="selectOrderFilter('all', 'Tất cả')">Tất cả</div>
-                    <div class="order-filter-option" data-status="pending" onclick="selectOrderFilter('pending', 'Đang chờ xử lý')">Đang chờ xử lý</div>
-                    <div class="order-filter-option" data-status="rejected" onclick="selectOrderFilter('rejected', 'Đã hủy')">Đã hủy</div>
-                    <div class="order-filter-option" data-status="approved" onclick="selectOrderFilter('approved', 'Hoàn thành')">Hoàn thành</div>
+                    <div class="order-filter-option active" data-status="all"
+                      onclick="selectOrderFilter('all', 'Tất cả')">Tất cả</div>
+                    <div class="order-filter-option" data-status="pending"
+                      onclick="selectOrderFilter('pending', 'Đang chờ xử lý')">Đang chờ xử lý</div>
+                    <div class="order-filter-option" data-status="rejected"
+                      onclick="selectOrderFilter('rejected', 'Đã hủy')">Đã hủy</div>
+                    <div class="order-filter-option" data-status="approved"
+                      onclick="selectOrderFilter('approved', 'Hoàn thành')">Hoàn thành</div>
                   </div>
                 </div>
               </div>

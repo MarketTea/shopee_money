@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hoàn tiền & Rút tiền — HoanTienNgay</title>
+  <meta name="description"
+    content="Quản lý thông tin nhận tiền, theo dõi hoa hồng đơn hàng Shopee và rút tiền hoàn về tài khoản ngân hàng qua mã QR." />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/header.css" />
+  <link rel="stylesheet" href="assets/css/sections.css" />
+  <link rel="stylesheet" href="assets/css/payout.css" />
+  <link rel="stylesheet" href="assets/css/referral.css" />
+  <link rel="stylesheet" href="assets/css/animations.css" />
+  <link rel="stylesheet" href="assets/css/responsive.css" />
+  <style>
+    .refund-page-hero {
+      padding: 3rem 5% 2rem;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    .refund-page-hero .page-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--orange-pale);
+      border: 2px solid var(--orange-light);
+      border-radius: 999px;
+      padding: 0.3rem 1rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--orange);
+      margin-bottom: 1.2rem;
+    }
+
+    .refund-page-hero h1 {
+      font-size: clamp(1.5rem, 5.5vw, 2.8rem);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+      margin-bottom: 0.8rem;
+    }
+
+    .refund-page-hero h1 .ref-title-line {
+      display: inline-block;
+      white-space: nowrap;
+    }
+
+    .refund-page-hero h1 .yellow {
+      color: var(--orange);
+    }
+
+    .refund-page-hero .sub {
+      font-size: 1rem;
+      color: var(--muted);
+      font-weight: 500;
+      line-height: 1.7;
+      max-width: 580px;
+    }
+
+    .refund-auth-panel {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 5% 2rem;
+    }
+
+    .refund-main-content {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 5% 4rem;
+    }
+
+    .refund-dashboard-wrapper {
+      margin-bottom: 3.5rem;
+    }
+
+    .nav-active-link {
+      font-weight: 800 !important;
+      color: var(--orange) !important;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAV -->
+  <header>
+    <button class="hamburger-btn" id="hamburgerBtn" onclick="openDrawer()" aria-label="Mở menu" type="button">
+      <span></span><span></span><span></span>
+    </button>
+    <a class="logo" href="index.html">
+      <img src="assets/images/logo.png" alt="Affiliate Shopee" class="logo-img" />
+      HoanTienNgay
+    </a>
+    <nav class="desktop-nav">
+      <a href="index.html#features">Tính năng</a>
+      <a href="index.html#how">Cách hoạt động</a>
+      <a href="referral.html">Mời bạn bè</a>
+      <a href="refund.html" class="nav-active-link">Hoàn tiền</a>
+      <a href="index.html" class="nav-cta">Chuyển Link</a>
+    </nav>
+  </header>
+
+  <!-- Mobile Drawer Overlay -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+
+  <!-- Mobile Drawer -->
+  <div class="mobile-drawer" id="mobileDrawer">
+    <div class="drawer-header">
+      <a class="logo drawer-logo" href="index.html">
+        <img src="assets/images/logo.png" alt="Affiliate Shopee" class="logo-img" />
+        HoanTienNgay
+      </a>
+      <button class="drawer-close" onclick="closeDrawer()" aria-label="Đóng menu" type="button">&times;</button>
+    </div>
+
+    <nav class="drawer-nav">
+      <a href="index.html#features" onclick="closeDrawer()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+        Tính năng
+      </a>
+      <a href="index.html#how" onclick="closeDrawer()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        </svg>
+        Cách hoạt động
+      </a>
+      <a href="referral.html" onclick="closeDrawer()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        Mời bạn bè
+      </a>
+      <a href="refund.html" class="active" onclick="closeDrawer()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+        </svg>
+        Hoàn Tiền
+      </a>
+    </nav>
+
+    <!-- Bottom User Section -->
+    <div class="drawer-user-container">
+      <!-- When logged in: Pill User Card -->
+      <div class="drawer-user-pill" id="drawerUserCard" onclick="toggleUserMenu(event)">
+        <img class="drawer-user-avatar" id="drawerUserAvatar" src="assets/images/logo.png" alt="Avatar"
+          onerror="this.src='assets/images/logo.png'" />
+        <div class="drawer-user-details">
+          <div class="drawer-user-name" id="drawerUserName">Người dùng</div>
+          <div class="drawer-user-email" id="drawerUserEmail">Đang đăng nhập...</div>
+        </div>
+        <div class="drawer-user-caret">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="7 15 12 20 17 15"></polyline>
+            <polyline points="7 9 12 4 17 9"></polyline>
+          </svg>
+        </div>
+        <!-- Dropdown on click -->
+        <div class="drawer-user-dropdown" id="drawerUserDropdown">
+          <button onclick="signOut()" type="button" class="drawer-dropdown-item">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            Đăng xuất
+          </button>
+        </div>
+      </div>
+
+      <!-- When logged out: Login with Google Pill -->
+      <div class="drawer-login-pill" id="drawerLoginCard">
+        <button class="drawer-login-btn" onclick="signInWithGoogle()" type="button">
+          <svg width="18" height="18" viewBox="0 0 24 24">
+            <path fill="#EA4335"
+              d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.4 9 5 12 5z" />
+            <path fill="#4285F4"
+              d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z" />
+            <path fill="#FBBC05"
+              d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 12.3 0 15.2s.7 5.5 1.9 7.9l3.7-2.9z" />
+            <path fill="#34A853"
+              d="M12 23.5c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.4-6.4-5.2L1.9 16.5C3.7 20.2 7.5 23.5 12 23.5z" />
+          </svg>
+          <span>Đăng nhập Google</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE HERO -->
+  <div class="refund-page-hero">
+    <div class="page-badge">
+      <span>💰</span> Trung tâm Hoàn Tiền
+    </div>
+    <h1><span class="ref-title-line">Quản lý hoàn tiền.</span><br><span class="ref-title-line yellow">Rút tiền về
+        túi.</span></h1>
+    <p class="sub">Theo dõi hoa hồng đơn hàng Shopee đã ghi nhận và rút tiền hoàn nhanh chóng về tài khoản ngân hàng
+      hoặc ví qua mã QR.</p>
+  </div>
+
+  <!-- AUTH PANEL -->
+  <div class="refund-auth-panel" id="refAuthPanel" style="display:none;">
+    <div class="ref-auth-card">
+      <div class="ref-auth-copy">
+        <div class="auth-title">Đăng nhập để xem và rút tiền hoàn</div>
+        <div class="auth-status">Cài đặt thông tin nhận tiền, theo dõi đơn hàng và rút hoa hồng về tài khoản của bạn.
+        </div>
+        <div class="auth-bonus-badge">🎁 Đăng nhập lần đầu nhận ngay <strong>20.000đ</strong> vào ví!</div>
+      </div>
+      <div class="ref-auth-actions">
+        <button class="btn-auth" id="refLoginBtn" onclick="signInWithGoogle()" type="button">Đăng nhập Google</button>
+        <button class="btn-auth secondary" id="refLogoutBtn" onclick="signOut()" type="button"
+          style="display:none;">Đăng xuất</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REFUND MAIN CONTENT -->
+  <div class="refund-main-content">
+    <!-- Payout Dashboard Section -->
+    <div class="refund-dashboard-wrapper">
+      <div class="payout-panel" id="payoutPanel">
+        <!-- Logged In: Not Setup QR State -->
+        <div id="payoutSetupPrompt" class="payout-setup-prompt"
+          style="display:none; justify-content: center; align-items: center; padding: 2.5rem 1rem;">
+          <button class="btn-convert" onclick="openPayoutModal()" type="button"
+            style="padding: 0.9rem 2rem; font-size: 1rem; box-shadow: 0 4px 20px rgba(245, 166, 35, 0.35);">
+            🏦 Thêm tài khoản ngân hàng
+          </button>
+        </div>
+
+        <!-- Logged In: Dashboard State -->
+        <div id="payoutDashboard" class="payout-dashboard" style="display:none;">
+          <div class="payout-dashboard-layout">
+            <div class="payout-summary-card">
+              <div class="summary-details">
+                <div class="summary-label">🌸 Tổng hoa hồng ước tính</div>
+                <div class="summary-amount" id="payoutEstimatedTotal">0đ</div>
+              </div>
+              <div class="payout-summary-actions">
+                <button class="btn-update-qr" onclick="openPayoutModal()" type="button">Cập nhật thông tin</button>
+                <button class="btn-update-qr" id="btnWithdraw" onclick="openWithdrawModal()" type="button">💰💰 Rút
+                  tiền về túi</button>
+              </div>
+            </div>
+
+            <div class="payout-orders-section">
+              <div class="payout-orders-header-row">
+                <div class="orders-header">Chi tiết đơn hàng nhận hoàn tiền</div>
+                <div class="order-filter-dropdown" id="orderFilterDropdown">
+                  <button class="order-filter-btn" id="orderFilterBtn" type="button" onclick="toggleOrderFilter(event)" aria-expanded="false" aria-label="Lọc trạng thái đơn hàng">
+                    <span id="orderFilterSelectedLabel">Tất cả</span>
+                    <svg class="order-filter-chevron" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </button>
+                  <div class="order-filter-menu" id="orderFilterMenu">
+                    <div class="order-filter-option active" data-status="all" onclick="selectOrderFilter('all', 'Tất cả')">Tất cả</div>
+                    <div class="order-filter-option" data-status="pending" onclick="selectOrderFilter('pending', 'Đang chờ xử lý')">Đang chờ xử lý</div>
+                    <div class="order-filter-option" data-status="rejected" onclick="selectOrderFilter('rejected', 'Đã hủy')">Đã hủy</div>
+                    <div class="order-filter-option" data-status="approved" onclick="selectOrderFilter('approved', 'Hoàn thành')">Hoàn thành</div>
+                  </div>
+                </div>
+              </div>
+              <div class="payout-orders-list" id="payoutOrdersList">
+                <!-- Dynamic rendering -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Steps Flow Section -->
+    <div class="steps-wrapper reveal">
+      <p class="section-label">Quy trình hoàn tiền</p>
+      <h2 class="section-title">3 bước đơn giản để nhận tiền về ví</h2>
+      <div class="referral-steps-section">
+        <div class="referral-steps-flow">
+          <div class="ref-step-item">
+            <span class="ref-step-badge badge-orange">01</span>
+            <div class="ref-step-card">
+              <div class="ref-step-icon-wrapper bg-orange-light">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                  class="ref-step-icon text-orange">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                </svg>
+              </div>
+              <h3>Chuyển link &amp; Mua sắm</h3>
+              <p>Dán link Shopee vào trang chủ để nhận link hoàn tiền riêng của bạn trước khi đặt hàng.</p>
+            </div>
+          </div>
+          <div class="ref-step-item">
+            <span class="ref-step-badge badge-blue">02</span>
+            <div class="ref-step-card">
+              <div class="ref-step-icon-wrapper bg-blue-light">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                  class="ref-step-icon text-blue">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3>Ghi nhận hoa hồng</h3>
+              <p>Khi đơn hàng được giao thành công, hệ thống tự động cập nhật hoa hồng vào mục hoàn tiền.</p>
+            </div>
+          </div>
+          <div class="ref-step-item">
+            <span class="ref-step-badge badge-green">03</span>
+            <div class="ref-step-card">
+              <div class="ref-step-icon-wrapper bg-green-light">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                  class="ref-step-icon text-green">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+              <h3>Rút tiền về tài khoản</h3>
+              <p>Cài đặt mã QR ngân hàng và bấm Rút tiền — admin duyệt và chuyển khoản trực tiếp cho bạn.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <a class="logo" href="index.html">
+      <img src="assets/images/logo.png" alt="Affiliate Shopee" class="logo-img" /> HoanTienNgay
+    </a>
+    <div class="footer-links">
+      <a href="javascript:void(0)">Bảo mật</a>
+      <a href="javascript:void(0)">Điều khoản</a>
+      <a href="https://t.me/market_tea_23" target="_blank" rel="noopener noreferrer">Liên hệ</a>
+      <a href="javascript:void(0)" id="footerLogoutBtn" onclick="signOut()" style="display:none;">Đăng xuất</a>
+    </div>
+    <small>&copy; 2026 HoanTienNgay. Bảo lưu mọi quyền.</small>
+  </footer>
+
+  <!-- Dialog: Payout Setup -->
+  <dialog id="payoutModal" class="payout-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Thông tin nhận tiền hoàn</h3>
+        <button class="modal-close" onclick="closePayoutModal()" type="button">&times;</button>
+      </div>
+      <form id="payoutForm" onsubmit="savePayoutQr(event)">
+        <div class="payout-warning">
+          <span class="payout-warning-icon">⚠️</span>
+          <span><strong>Lưu ý:</strong> Chúng tôi sẽ không chịu trách nhiệm nếu bạn điền sai thông tin nhận tiền. Vui
+            lòng kiểm tra kỹ.</span>
+        </div>
+        <div class="payout-fields">
+          <label for="payoutRecipientName">Tên người nhận (chữ hoa không dấu)</label>
+          <input type="text" id="payoutRecipientName" class="payout-input" placeholder="Ví dụ: NGUYEN VAN A"
+            autocomplete="name" maxlength="120" />
+
+          <label for="payoutQrInput">Ảnh mã QR ngân hàng hoặc ví</label>
+          <input type="file" id="payoutQrInput" class="payout-file" accept="image/png,image/jpeg,image/webp"
+            onchange="handlePayoutQrSelected(event)" />
+          <div class="payout-help">Chấp nhận PNG, JPG, JPEG, WEBP. Dung lượng tối đa 2MB.</div>
+          <div class="payout-file-name" id="payoutFileName"></div>
+        </div>
+
+        <div class="payout-preview">
+          <img id="payoutQrPreview" alt="Mã QR nhận hoàn tiền" />
+          <div class="payout-preview-empty" id="payoutQrEmpty">Chưa có mã QR</div>
+        </div>
+
+        <div class="payout-actions">
+          <button class="btn-convert" id="payoutSaveBtn" type="submit">
+            <span id="payoutSaveLabel">Lưu thông tin nhận tiền</span>
+            <div class="spinner" id="payoutSpinner"></div>
+          </button>
+          <div class="payout-uploaded-at" id="payoutUploadedAt"></div>
+        </div>
+        <div class="payout-status" id="payoutStatus"></div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- Dialog: Rút tiền -->
+  <dialog id="withdrawModal" class="payout-dialog withdraw-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>💰 Yêu cầu rút tiền</h3>
+        <button class="modal-close" onclick="closeWithdrawModal()" type="button">&times;</button>
+      </div>
+
+      <div id="withdrawContent">
+        <!-- Summary -->
+        <div class="withdraw-summary">
+          <div class="withdraw-summary-row">
+            <span class="withdraw-summary-label">Đơn hoàn thành đủ điều kiện</span>
+            <span class="withdraw-summary-value" id="withdrawEligibleCount">0 đơn</span>
+          </div>
+          <div class="withdraw-summary-row">
+            <span class="withdraw-summary-label">Tổng hoa hồng net</span>
+            <span class="withdraw-summary-value" id="withdrawTotalNet">0đ</span>
+          </div>
+          <div class="withdraw-summary-row withdraw-bonus-row" id="withdrawBonusRow" style="display:none;">
+            <span class="withdraw-summary-label">🎁 Bonus tặng khi đăng ký</span>
+            <span class="withdraw-summary-value withdraw-bonus" id="withdrawBonusAmount">0đ</span>
+          </div>
+          <div class="withdraw-summary-row highlight-green">
+            <span class="withdraw-summary-label">✅ Số tiền có thể rút lần này</span>
+            <span class="withdraw-summary-value withdraw-available" id="withdrawAvailable">0đ</span>
+          </div>
+          <div class="withdraw-min-warning" id="withdrawMinWarning" style="display:none;"></div>
+        </div>
+
+        <!-- Withdraw action -->
+        <div class="withdraw-action">
+          <div class="withdraw-note">💵 Sau khi gửi yêu cầu, admin sẽ chuyển tiền vào tài khoản đã đăng ký trong vòng 24
+            - 48h.</div>
+          <button class="btn-convert btn-do-withdraw" id="btnDoWithdraw" type="button"
+            onclick="submitWithdrawRequest()">
+            <span id="withdrawBtnLabel">Gửi yêu cầu rút tiền</span>
+            <div class="spinner" id="withdrawSpinner"></div>
+          </button>
+          <div class="withdraw-status" id="withdrawStatus"></div>
+        </div>
+
+        <!-- History -->
+        <div class="withdraw-history-section">
+          <div class="withdraw-history-title">Lịch sử rút tiền</div>
+          <div class="withdraw-history-list" id="withdrawHistoryList">
+            <div class="history-empty">Đang tải...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/utils.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/payout.js"></script>
+  <script src="assets/js/withdrawal.js"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+
+</html>

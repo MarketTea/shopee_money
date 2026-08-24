@@ -64,3 +64,59 @@ footer {
   position: relative;
   z-index: 1;
 }
+
+/* ── GLOBAL BUTTONS ── */
+.btn-convert {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--yellow);
+  color: #000;
+  padding: 0.8rem 1.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-weight: 800;
+  border: var(--border-thin);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  text-decoration: none;
+}
+
+.btn-convert:hover:not(:disabled) {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-lg);
+  background: #FFE840;
+}
+
+.btn-convert:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 #000;
+}
+
+.btn-convert:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: var(--shadow-md);
+}
+
+/* ── SPINNER ── */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(26, 10, 5, 0.3);
+  border-top-color: #1A0A05;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: none;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

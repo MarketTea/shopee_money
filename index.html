@@ -37,7 +37,7 @@
       <a href="javascript:void(0)" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">Cách
         hoạt động</a>
       <a href="referral.html">Mời bạn bè</a>
-      <a href="javascript:void(0)" onclick="navigateToTab('payout')">QR nhận tiền</a>
+      <a href="refund.html">Hoàn tiền</a>
       <a href="javascript:void(0)" onclick="navigateToTab('convert')" class="nav-cta">Chuyển Link</a>
     </nav>
   </header>
@@ -80,7 +80,7 @@
         </svg>
         Mời bạn bè
       </a>
-      <a href="javascript:void(0)" onclick="closeDrawer(); navigateToTab('payout')">
+      <a href="refund.html" onclick="closeDrawer()">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
@@ -168,8 +168,6 @@
           Link</button>
         <button class="tab-btn" id="tabBtnHistory" onclick="switchConverterTab('history')" type="button">Lịch sử
           Link</button>
-        <button class="tab-btn" id="tabBtnPayout" onclick="switchConverterTab('payout')" type="button">Hoàn
-          tiền</button>
       </div>
 
 
@@ -233,43 +231,7 @@
         </div>
       </div>
 
-      <!-- Tab Content: Payout QR -->
-      <div class="tab-content" id="tabContentPayout">
-        <div class="payout-panel" id="payoutPanel">
-          <!-- Logged In: Not Setup QR State -->
-          <div id="payoutSetupPrompt" class="payout-setup-prompt"
-            style="display:none; justify-content: center; align-items: center; padding: 2.5rem 1rem;">
-            <button class="btn-convert" onclick="openPayoutModal()" type="button"
-              style="padding: 0.9rem 2rem; font-size: 1rem; box-shadow: 0 4px 20px rgba(245, 166, 35, 0.35);">
-              🏦 Thêm tài khoản ngân hàng
-            </button>
-          </div>
 
-          <!-- Logged In: Dashboard State -->
-          <div id="payoutDashboard" class="payout-dashboard" style="display:none;">
-            <div class="payout-dashboard-layout">
-              <div class="payout-summary-card">
-                <div class="summary-details">
-                  <div class="summary-label">🌸 Tổng hoa hồng ước tính</div>
-                  <div class="summary-amount" id="payoutEstimatedTotal">0đ</div>
-                </div>
-                <div class="payout-summary-actions">
-                  <button class="btn-update-qr" onclick="openPayoutModal()" type="button">Cập nhật thông tin</button>
-                  <button class="btn-update-qr" id="btnWithdraw" onclick="openWithdrawModal()" type="button">💰💰 Rút
-                    tiền về túi</button>
-                </div>
-              </div>
-
-              <div class="payout-orders-section">
-                <div class="orders-header">Chi tiết đơn hàng nhận hoàn tiền</div>
-                <div class="payout-orders-list" id="payoutOrdersList">
-                  <!-- Dynamic rendering -->
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
 
       <!-- end result box -->
@@ -419,166 +381,9 @@
     <small>© 2026 HoanTienNgay. Bảo lưu mọi quyền.</small>
   </footer>
 
-  <!-- Dialog: Payout Setup -->
-  <dialog id="payoutModal" class="payout-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>Thông tin nhận tiền hoàn</h3>
-        <button class="modal-close" onclick="closePayoutModal()" type="button">&times;</button>
-      </div>
-      <form id="payoutForm" onsubmit="savePayoutQr(event)">
-        <div class="payout-warning">
-          <span class="payout-warning-icon">⚠️</span>
-          <span><strong>Lưu ý:</strong> Chúng tôi sẽ không chịu trách nhiệm nếu bạn điền sai thông tin nhận tiền. Vui
-            lòng kiểm tra kỹ.</span>
-        </div>
-        <div class="payout-fields">
-          <label for="payoutRecipientName">Tên người nhận (chữ hoa không dấu)</label>
-          <input type="text" id="payoutRecipientName" class="payout-input" placeholder="Ví dụ: NGUYEN VAN A"
-            autocomplete="name" maxlength="120" />
-
-          <label for="payoutQrInput">Ảnh mã QR ngân hàng hoặc ví</label>
-          <input type="file" id="payoutQrInput" class="payout-file" accept="image/png,image/jpeg,image/webp"
-            onchange="handlePayoutQrSelected(event)" />
-          <div class="payout-help">Chấp nhận PNG, JPG, JPEG, WEBP. Dung lượng tối đa 2MB.</div>
-          <div class="payout-file-name" id="payoutFileName"></div>
-        </div>
-
-        <div class="payout-preview">
-          <img id="payoutQrPreview" alt="Mã QR nhận hoàn tiền" />
-          <div class="payout-preview-empty" id="payoutQrEmpty">Chưa có mã QR</div>
-        </div>
-
-        <div class="payout-actions">
-          <button class="btn-convert" id="payoutSaveBtn" type="submit">
-            <span id="payoutSaveLabel">Lưu thông tin nhận tiền</span>
-            <div class="spinner" id="payoutSpinner"></div>
-          </button>
-          <div class="payout-uploaded-at" id="payoutUploadedAt"></div>
-        </div>
-        <div class="payout-status" id="payoutStatus"></div>
-      </form>
-    </div>
-  </dialog>
-
-  <!-- Dialog: Rút tiền -->
-  <dialog id="withdrawModal" class="payout-dialog withdraw-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>💰 Yêu cầu rút tiền</h3>
-        <button class="modal-close" onclick="closeWithdrawModal()" type="button">&times;</button>
-      </div>
-
-      <div id="withdrawContent">
-        <!-- Summary -->
-        <div class="withdraw-summary">
-          <div class="withdraw-summary-row">
-            <span class="withdraw-summary-label">Đơn hoàn thành đủ điều kiện</span>
-            <span class="withdraw-summary-value" id="withdrawEligibleCount">0 đơn</span>
-          </div>
-          <div class="withdraw-summary-row">
-            <span class="withdraw-summary-label">Tổng hoa hồng net</span>
-            <span class="withdraw-summary-value" id="withdrawTotalNet">0đ</span>
-          </div>
-          <div class="withdraw-summary-row withdraw-bonus-row" id="withdrawBonusRow" style="display:none;">
-            <span class="withdraw-summary-label">🎁 Bonus tặng khi đăng ký</span>
-            <span class="withdraw-summary-value withdraw-bonus" id="withdrawBonusAmount">0đ</span>
-          </div>
-          <div class="withdraw-summary-row highlight-green">
-            <span class="withdraw-summary-label">✅ Số tiền có thể rút lần này</span>
-            <span class="withdraw-summary-value withdraw-available" id="withdrawAvailable">0đ</span>
-          </div>
-          <div class="withdraw-min-warning" id="withdrawMinWarning" style="display:none;"></div>
-        </div>
-
-
-
-        <!-- Withdraw action -->
-        <div class="withdraw-action">
-          <div class="withdraw-note">💵 💵 Sau khi gửi yêu cầu, admin sẽ chuyển tiền vào tài khoản đã đăng ký.</div>
-          <button class="btn-convert btn-do-withdraw" id="btnDoWithdraw" type="button"
-            onclick="submitWithdrawRequest()">
-            <span id="withdrawBtnLabel">Gửi yêu cầu rút tiền</span>
-            <div class="spinner" id="withdrawSpinner"></div>
-          </button>
-          <div class="withdraw-status" id="withdrawStatus"></div>
-        </div>
-
-        <!-- History -->
-        <div class="withdraw-history-section">
-          <div class="withdraw-history-title">Lịch sử rút tiền</div>
-          <div class="withdraw-history-list" id="withdrawHistoryList">
-            <div class="history-empty">Đang tải...</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </dialog>
-
-  <!-- Dialog: Promo Mời Bạn Bè -->
-  <dialog id="referralPromoModal" class="payout-dialog promo-dialog">
-    <div class="promo-modal-wrapper">
-      <!-- Promo Header -->
-      <div class="promo-header">
-        <button class="promo-close-btn" onclick="closeReferralPromoModal()" type="button"
-          aria-label="Đóng">&times;</button>
-        <div class="promo-badge-icon">
-          <img src="assets/images/logo.png" alt="HoanTienNgay" class="promo-logo-img" />
-          <span class="promo-gift-tag">🎁 +20.000đ</span>
-        </div>
-        <h2 class="promo-title">Mời Bạn Bè — Cùng Kiếm Tiền!</h2>
-        <p class="promo-subtitle">Nhận ngay <strong>20.000đ</strong> vào ví và hưởng hoa hồng không giới hạn cùng
-          HoanTienNgay.</p>
-      </div>
-
-      <!-- Promo Body -->
-      <div class="promo-body">
-        <div class="promo-feature-list">
-          <div class="promo-feature-item">
-            <div class="promo-feature-icon">🎁</div>
-            <div class="promo-feature-text">
-              <strong>Tặng ngay 20.000đ vào ví</strong>
-              <span>Cộng tiền tự động khi đăng ký tài khoản thành công qua mã giới thiệu.</span>
-            </div>
-          </div>
-
-          <div class="promo-feature-item">
-            <div class="promo-feature-icon">💸</div>
-            <div class="promo-feature-text">
-              <strong>Hoa hồng trọn đời không giới hạn</strong>
-              <span>Tự động nhận hoa hồng từ mỗi đơn hàng Shopee của bạn bè.</span>
-            </div>
-          </div>
-
-          <div class="promo-feature-item">
-            <div class="promo-feature-icon">⚡</div>
-            <div class="promo-feature-text">
-              <strong>Rút tiền dễ dàng về tài khoản</strong>
-              <span>Rút tiền nhanh chóng về tài khoản ngân hàng hoặc ví qua mã QR.</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Promo Actions -->
-        <div class="promo-actions">
-          <a href="referral.html" class="btn-convert promo-cta-btn">
-            <span>Mời ngay</span>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-              stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </a>
-          <button class="promo-later-btn" onclick="closeReferralPromoModal()" type="button">Để sau</button>
-        </div>
-      </div>
-    </div>
-  </dialog>
-
   <script src="assets/js/config.js"></script>
   <script src="assets/js/utils.js"></script>
   <script src="assets/js/auth.js"></script>
-  <script src="assets/js/payout.js"></script>
-  <script src="assets/js/withdrawal.js"></script>
   <script src="assets/js/shopee.js"></script>
   <script src="assets/js/converter.js"></script>
   <script src="assets/js/history.js"></script>

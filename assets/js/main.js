@@ -21,7 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if (typeof initReferralCode === 'function') initReferralCode();
   if (typeof initAuth === 'function') initAuth();
   if (typeof initStepper === 'function') initStepper();
-  if (typeof checkAndShowReferralPromo === 'function') checkAndShowReferralPromo();
 
   // Check URL query parameters for tab navigation (e.g. index.html?tab=payout)
   const urlParams = new URLSearchParams(window.location.search);
@@ -35,7 +34,6 @@ if (document.readyState === 'interactive' || document.readyState === 'complete')
   if (typeof initReferralCode === 'function') initReferralCode();
   if (typeof initAuth === 'function') initAuth();
   if (typeof initStepper === 'function') initStepper();
-  if (typeof checkAndShowReferralPromo === 'function') checkAndShowReferralPromo();
 }
 
 function switchConverterTab(tabName) {
@@ -46,20 +44,23 @@ function switchConverterTab(tabName) {
   const tabContentHistory = document.getElementById('tabContentHistory');
   const tabContentPayout = document.getElementById('tabContentPayout');
 
-  if (!tabBtnConvert || !tabBtnHistory || !tabBtnPayout || !tabContentConvert || !tabContentHistory || !tabContentPayout) return;
+  if (tabName === 'payout' && !tabBtnPayout) {
+    window.location.href = 'refund.html';
+    return;
+  }
 
   // Reset active classes
-  tabBtnConvert.classList.remove('active');
-  tabBtnHistory.classList.remove('active');
-  tabBtnPayout.classList.remove('active');
-  tabContentConvert.classList.remove('active');
-  tabContentHistory.classList.remove('active');
-  tabContentPayout.classList.remove('active');
+  if (tabBtnConvert) tabBtnConvert.classList.remove('active');
+  if (tabBtnHistory) tabBtnHistory.classList.remove('active');
+  if (tabBtnPayout) tabBtnPayout.classList.remove('active');
+  if (tabContentConvert) tabContentConvert.classList.remove('active');
+  if (tabContentHistory) tabContentHistory.classList.remove('active');
+  if (tabContentPayout) tabContentPayout.classList.remove('active');
 
-  if (tabName === 'convert') {
+  if (tabName === 'convert' && tabBtnConvert && tabContentConvert) {
     tabBtnConvert.classList.add('active');
     tabContentConvert.classList.add('active');
-  } else if (tabName === 'history') {
+  } else if (tabName === 'history' && tabBtnHistory && tabContentHistory) {
     tabBtnHistory.classList.add('active');
     tabContentHistory.classList.add('active');
 
@@ -67,7 +68,7 @@ function switchConverterTab(tabName) {
     if (typeof loadLinkHistory === 'function' && currentUser) {
       loadLinkHistory();
     }
-  } else if (tabName === 'payout') {
+  } else if (tabName === 'payout' && tabBtnPayout && tabContentPayout) {
     tabBtnPayout.classList.add('active');
     tabContentPayout.classList.add('active');
 
@@ -78,8 +79,11 @@ function switchConverterTab(tabName) {
   }
 }
 
-
 function navigateToTab(tabName) {
+  if (tabName === 'payout') {
+    window.location.href = 'refund.html';
+    return;
+  }
   const target = document.getElementById('convert');
   if (target) {
     target.scrollIntoView({ behavior: 'smooth' });
@@ -207,52 +211,5 @@ document.addEventListener('keydown', (e) => {
   });
 })();
 
-/* ── REFERRAL PROMO MODAL ── */
-function openReferralPromoModal() {
-  const modal = document.getElementById('referralPromoModal');
-  if (!modal) return;
-  if (typeof modal.showModal === 'function') {
-    modal.showModal();
-  } else {
-    modal.setAttribute('open', '');
-    modal.classList.add('show');
-  }
-}
 
-function closeReferralPromoModal() {
-  const modal = document.getElementById('referralPromoModal');
-  if (!modal) return;
-  if (typeof modal.close === 'function') {
-    modal.close();
-  } else {
-    modal.removeAttribute('open');
-    modal.classList.remove('show');
-  }
-  try {
-    sessionStorage.setItem('referral_promo_closed', '1');
-  } catch (e) {}
-}
-
-function checkAndShowReferralPromo() {
-  const promoModal = document.getElementById('referralPromoModal');
-  if (!promoModal) return;
-
-  try {
-    if (sessionStorage.getItem('referral_promo_closed') === '1') {
-      return;
-    }
-  } catch (e) {}
-
-  setTimeout(() => {
-    openReferralPromoModal();
-  }, 400);
-}
-
-// Close promo modal on backdrop click
-window.addEventListener('click', (event) => {
-  const promoModal = document.getElementById('referralPromoModal');
-  if (promoModal && event.target === promoModal) {
-    closeReferralPromoModal();
-  }
-});
 

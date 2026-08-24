@@ -54,6 +54,12 @@ header {
   text-decoration-thickness: 2px;
 }
 
+.desktop-nav a.nav-active-link,
+.desktop-nav a.active {
+  font-weight: 800 !important;
+  color: var(--orange) !important;
+}
+
 .nav-cta {
   background: var(--yellow) !important;
   color: #000 !important;

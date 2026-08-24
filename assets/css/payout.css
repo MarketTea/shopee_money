@@ -393,11 +393,102 @@
   text-align: left;
 }
 
+.payout-orders-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.85rem;
+  flex-wrap: wrap;
+}
+
 .orders-header {
   color: #000;
   font-size: 0.95rem;
   font-weight: 900;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0;
+}
+
+/* ── ORDER FILTER DROPDOWN ── */
+.order-filter-dropdown {
+  position: relative;
+  user-select: none;
+}
+
+.order-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 145px;
+  background: #fff;
+  border: var(--border-thin);
+  border-radius: var(--radius-sm);
+  padding: 0.42rem 0.85rem;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #000;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.15s ease;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.order-filter-btn:hover {
+  background: #fffbf0;
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 #000;
+}
+
+.order-filter-chevron {
+  transition: transform 0.2s ease;
+  color: #555;
+  flex-shrink: 0;
+}
+
+.order-filter-dropdown.open .order-filter-chevron {
+  transform: rotate(180deg);
+}
+
+.order-filter-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 175px;
+  background: #fff;
+  border: var(--border-thin);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  padding: 0.35rem 0;
+  z-index: 60;
+}
+
+.order-filter-dropdown.open .order-filter-menu {
+  display: block;
+  animation: fadeIn 0.15s ease both;
+}
+
+.order-filter-option {
+  padding: 0.55rem 1rem;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #222;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  display: flex;
+  align-items: center;
+}
+
+.order-filter-option:hover {
+  background: var(--orange-pale);
+  color: var(--orange);
+}
+
+.order-filter-option.active {
+  color: var(--orange) !important;
+  font-weight: 800 !important;
+  background: var(--orange-pale);
 }
 
 .payout-orders-list {

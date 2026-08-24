@@ -24,6 +24,19 @@ function resetPayoutForm() {
   if (uploadedAt) uploadedAt.textContent = '';
   setPayoutPreview('');
   clearPayoutStatus();
+
+  _allPayoutOrders = [];
+  _currentOrderFilter = 'all';
+  const labelEl = document.getElementById('orderFilterSelectedLabel');
+  if (labelEl) labelEl.textContent = 'Tất cả';
+  const options = document.querySelectorAll('.order-filter-option');
+  options.forEach(opt => {
+    if (opt.getAttribute('data-status') === 'all') {
+      opt.classList.add('active');
+    } else {
+      opt.classList.remove('active');
+    }
+  });
 }
 
 async function loadPayoutProfile() {
@@ -304,6 +317,56 @@ window.addEventListener('click', (event) => {
   }
 });
 
+// ─── Order Filtering State ───
+let _allPayoutOrders = [];
+let _currentOrderFilter = 'all';
+
+function toggleOrderFilter(event) {
+  if (event) event.stopPropagation();
+  const dropdown = document.getElementById('orderFilterDropdown');
+  if (dropdown) {
+    const isOpen = dropdown.classList.toggle('open');
+    const btn = document.getElementById('orderFilterBtn');
+    if (btn) btn.setAttribute('aria-expanded', String(isOpen));
+  }
+}
+
+function selectOrderFilter(status, label) {
+  _currentOrderFilter = status;
+  const labelEl = document.getElementById('orderFilterSelectedLabel');
+  if (labelEl) labelEl.textContent = label;
+
+  const options = document.querySelectorAll('.order-filter-option');
+  options.forEach(opt => {
+    if (opt.getAttribute('data-status') === status) {
+      opt.classList.add('active');
+    } else {
+      opt.classList.remove('active');
+    }
+  });
+
+  const dropdown = document.getElementById('orderFilterDropdown');
+  if (dropdown) {
+    dropdown.classList.remove('open');
+    const btn = document.getElementById('orderFilterBtn');
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+  }
+
+  renderFilteredPayoutOrders();
+}
+
+// Close filter dropdown on outside click
+document.addEventListener('click', (event) => {
+  const dropdown = document.getElementById('orderFilterDropdown');
+  if (dropdown && dropdown.classList.contains('open')) {
+    if (!dropdown.contains(event.target)) {
+      dropdown.classList.remove('open');
+      const btn = document.getElementById('orderFilterBtn');
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+    }
+  }
+});
+
 async function loadPayoutOrders() {
   const totalEl = document.getElementById('payoutEstimatedTotal');
   const listEl = document.getElementById('payoutOrdersList');
@@ -385,33 +448,61 @@ async function loadPayoutOrders() {
     // Hiển thị 50% hoa hồng + bonus
     totalEl.textContent = formatCurrency((totalNetCommission / 2) + bonusBalance);
 
-    if (orders.length === 0) {
-      listEl.innerHTML = '<div class="history-empty">Chưa có đơn hàng nào được ghi nhận.</div>';
-      return;
-    }
-
-    listEl.innerHTML = orders.map(order => {
-      const name = order.item_name || order.affiliate_links?.product_name || 'Đơn hàng Shopee';
-      const time = order.purchase_time ? new Date(order.purchase_time).toLocaleDateString('vi-VN') : '--';
-      const netComm = formatCurrency(order.net_commission);
-      const statusMeta = getOrderStatusMeta(order.status);
-
-      return `
-        <div class="payout-order-row">
-          <div class="payout-order-info">
-            <span class="payout-order-name" title="${escapeHtml(name)}">${escapeHtml(name)}</span>
-            <span class="payout-order-meta">Mã đơn: ${escapeHtml(order.shopee_order_id)} | Ngày: ${time}</span>
-          </div>
-          <div class="payout-order-right">
-            <span class="payout-order-amount">+${netComm}</span>
-            <span class="payout-order-status ${statusMeta.className}">${statusMeta.label}</span>
-          </div>
-        </div>
-      `;
-    }).join('');
+    _allPayoutOrders = orders;
+    renderFilteredPayoutOrders();
 
   } catch (error) {
     console.error('Could not load orders:', error);
     listEl.innerHTML = '<div class="history-empty">Không tải được danh sách đơn hàng.</div>';
   }
+}
+
+function renderFilteredPayoutOrders() {
+  const listEl = document.getElementById('payoutOrdersList');
+  if (!listEl) return;
+
+  if (_allPayoutOrders.length === 0) {
+    listEl.innerHTML = '<div class="history-empty">Chưa có đơn hàng nào được ghi nhận.</div>';
+    return;
+  }
+
+  let filtered = _allPayoutOrders;
+  if (_currentOrderFilter !== 'all') {
+    if (_currentOrderFilter === 'approved') {
+      filtered = _allPayoutOrders.filter(o => o.status === 'approved' || o.status === 'paid');
+    } else {
+      filtered = _allPayoutOrders.filter(o => o.status === _currentOrderFilter);
+    }
+  }
+
+  if (filtered.length === 0) {
+    const emptyLabels = {
+      pending: 'Đang chờ xử lý',
+      rejected: 'Đã hủy',
+      approved: 'Hoàn thành'
+    };
+    const label = emptyLabels[_currentOrderFilter] || 'trạng thái này';
+    listEl.innerHTML = `<div class="history-empty">Không có đơn hàng nào thuộc trạng thái "${label}".</div>`;
+    return;
+  }
+
+  listEl.innerHTML = filtered.map(order => {
+    const name = order.item_name || order.affiliate_links?.product_name || 'Đơn hàng Shopee';
+    const time = order.purchase_time ? new Date(order.purchase_time).toLocaleDateString('vi-VN') : '--';
+    const netComm = formatCurrency(order.net_commission);
+    const statusMeta = getOrderStatusMeta(order.status);
+
+    return `
+      <div class="payout-order-row">
+        <div class="payout-order-info">
+          <span class="payout-order-name" title="${escapeHtml(name)}">${escapeHtml(name)}</span>
+          <span class="payout-order-meta">Mã đơn: ${escapeHtml(order.shopee_order_id)} | Ngày: ${time}</span>
+        </div>
+        <div class="payout-order-right">
+          <span class="payout-order-amount">+${netComm}</span>
+          <span class="payout-order-status ${statusMeta.className}">${statusMeta.label}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
 }

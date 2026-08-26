@@ -1,5 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;600;800&display=swap');
 
+/* ── REFERRAL MAIN CONTAINER ── */
+.referral-main {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 5% 4rem;
+}
+
 /* ── REFERRAL PANEL (Premium & Modern) ── */
 .referral-panel {
   display: flex;

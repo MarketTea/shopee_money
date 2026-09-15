@@ -47,6 +47,8 @@ header {
   transition: transform 0.2s;
   white-space: nowrap;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
 }
 
 .desktop-nav a:hover {
@@ -54,10 +56,37 @@ header {
   text-decoration-thickness: 2px;
 }
 
+.desktop-nav a:hover .badge-new {
+  text-decoration: none !important;
+}
+
 .desktop-nav a.nav-active-link,
 .desktop-nav a.active {
   font-weight: 800 !important;
   color: var(--orange) !important;
+}
+
+/* ── BADGE "MỚI" (Shopee Style) ── */
+.badge-new {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--orange, #ee4d2d);
+  color: #ffffff !important;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 999px;
+  letter-spacing: 0.01em;
+  margin-left: 6px;
+  vertical-align: middle;
+  text-decoration: none !important;
+  box-shadow: 0 1px 3px rgba(238, 77, 45, 0.35);
+  pointer-events: none;
+  user-select: none;
+  flex-shrink: 0;
+  transform: translateY(-1px);
 }
 
 .nav-cta {
@@ -250,6 +279,11 @@ header {
   background: #fef2f2 !important;
   color: var(--orange, #ee4d2d) !important;
   font-weight: 700 !important;
+}
+
+.drawer-nav a span {
+  display: inline-flex;
+  align-items: center;
 }
 
 .drawer-nav a svg {

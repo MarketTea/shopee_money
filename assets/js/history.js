@@ -77,8 +77,16 @@ function renderHistory(links) {
 
   historyList.innerHTML = links.map(link => {
     const createdAt = new Date(link.created_at).toLocaleString('vi-VN');
-    const commission = escapeHtml(link.estimated_commission || 'Chưa có dữ liệu');
-    const rate = escapeHtml(link.commission_rate || '--');
+    const rawComm = link.estimated_commission;
+    const commission = rawComm
+      ? (typeof rawComm === 'string' && rawComm.includes('đ')
+          ? escapeHtml(rawComm)
+          : escapeHtml(formatCurrency(rawComm)))
+      : 'Chưa có dữ liệu';
+    const rawRate = link.commission_rate;
+    const rate = rawRate
+      ? (String(rawRate).endsWith('%') ? escapeHtml(rawRate) : `${escapeHtml(rawRate)}%`)
+      : '--';
     const affiliateUrl = escapeHtml(link.affiliate_url);
     const subId = escapeHtml(link.sub_id);
     const linkId = escapeHtml(link.id);
@@ -111,7 +119,7 @@ function renderHistory(links) {
             </div>
             <div class="history-commission">
               <span class="history-commission-text">🌸 Hoa hồng ước tính: ${commission}</span>
-              <span class="history-rate">${rate}%</span>
+              <span class="history-rate">${rate}</span>
             </div>
             ${orderMarkup}
           </div>

@@ -41,19 +41,19 @@ const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 - User đăng nhập Google qua Supabase Auth.
 - Frontend gọi Supabase Edge Function `convert-link`.
 - Function tạo `sub_id` dạng `u_<userShortId>_l_<linkShortId>`.
-- Function gọi ShopeeCD API `https://shopeecd.vercel.app/api/public/shopee/convert-link` với `originalLink`, `affiliateId`, `subId1`.
+- Function gọi AddLiveTag API `https://data.addlivetag.com/product-data/product-data.php` với `url`, `affiliateId`, `subId` và header `X-API-Key` từ secret.
 - Function lưu mapping, affiliate URL, hoa hồng ước tính và rate vào bảng `affiliate_links`.
 - Function luôn xác minh và ép `affiliate_url` về `affiliate_id` cấu hình trong `SHOPEE_AFFILIATE_ID` và `sub_id` do hệ thống tạo trước khi lưu DB.
 - Frontend hiển thị affiliate URL sau khi convert và hiển thị hoa hồng ước tính trong lịch sử link của user.
 - Khi user mở link Shopee, frontend gọi `record-click` để lưu lượt click vào bảng `clicks`.
 
-ShopeeCD API response được dùng từ `results[0]`:
+AddLiveTag API response được map từ `productInfo`:
 
-- `shortLink` hoặc `longLink` -> `affiliate_links.affiliate_url`
-- `commission` -> `affiliate_links.estimated_commission`
-- `rate` -> `affiliate_links.commission_rate`
-- `commission_name` -> `affiliate_links.product_name`
-- `product_image` -> `affiliate_links.product_image`
+- `affLink` -> `affiliate_links.affiliate_url`
+- `commission` (format VNĐ) -> `affiliate_links.estimated_commission`
+- `totalRatePercent` -> `affiliate_links.commission_rate`
+- `productName` -> `affiliate_links.product_name`
+- `imageUrl` -> `affiliate_links.product_image`
 
 ## Database
 

@@ -11,27 +11,40 @@ type ConvertBody = {
   normalized_url?: string;
 };
 
-type ShopeeConvertResult = {
-  originalLink?: string;
-  shortLink?: string;
-  longLink?: string;
-  commission?: string;
-  rate?: string;
-  commission_name?: string;
-  product_image?: string;
+type AddLiveProductInfo = {
+  itemId?: number;
+  shopId?: number;
+  catId?: number;
+  productName?: string;
+  shopName?: string;
+  price?: number;
+  sales?: number;
+  imageUrl?: string;
+  productLink?: string;
+  originLink?: string;
+  rating?: string;
+  commission?: number;
+  sellerComFinal?: number;
+  shopeeComFinal?: number;
+  sellerRatePercent?: number;
+  shopeeRatePercent?: number;
+  totalRatePercent?: number;
+  affiliateId?: string | null;
+  subId?: string | null;
+  affLink?: string | null;
 };
 
-type ShopeeConvertResponse = {
-  success?: boolean;
-  results?: ShopeeConvertResult[];
+type AddLiveResponse = {
+  status?: string;
   message?: string;
-  error?: string;
+  productInfo?: AddLiveProductInfo;
 };
 
 const affiliateId = Deno.env.get("SHOPEE_AFFILIATE_ID") || "17305840167";
 const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-const shopeeConvertApi = "https://shopeecd.vercel.app/api/public/shopee/convert-link";
+const addliveApiKey = Deno.env.get("ADDLIVETAG_API_KEY") || "";
+const productDataApi = "https://data.addlivetag.com/product-data/product-data.php";
 
 // ── Simple in-memory rate limiter (max 10 requests/minute per user) ──────────
 const RATE_LIMIT_MAX = 10;
@@ -177,58 +190,75 @@ function compact(value: string) {
 }
 
 async function convertShopeeLink(originalLink: string, subId: string) {
-  const response = await fetch(shopeeConvertApi, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      originalLink,
-      affiliateId,
-      subId1: subId,
-    }),
+  if (!addliveApiKey) {
+    throw new Error("ADDLIVETAG_API_KEY is not configured in Supabase secrets");
+  }
+
+  const targetUrl = new URL(productDataApi);
+  targetUrl.searchParams.set("url", originalLink);
+  targetUrl.searchParams.set("affiliateId", affiliateId);
+  targetUrl.searchParams.set("subId", subId);
+
+  const response = await fetch(targetUrl.toString(), {
+    method: "GET",
+    headers: {
+      "X-API-Key": addliveApiKey,
+    },
   });
 
-  let payload: ShopeeConvertResponse;
+  let payload: AddLiveResponse;
   try {
     payload = await response.json();
   } catch {
-    throw new Error("ShopeeCD API returned an invalid response");
+    throw new Error("AddLiveTag API returned an invalid response");
   }
 
-  if (!response.ok) {
-    throw new Error(payload.error || payload.message || "ShopeeCD API request failed");
+  if (!response.ok || payload.status !== "success" || !payload.productInfo) {
+    throw new Error(payload.message || "AddLiveTag API request failed");
   }
 
-  if (!payload.success || !payload.results?.length) {
-    throw new Error(payload.error || payload.message || "ShopeeCD API did not return a converted link");
-  }
-
-  const result = payload.results[0];
-  const affiliateUrl = buildVerifiedAffiliateUrl(result.longLink || result.shortLink, originalLink, subId);
+  const info = payload.productInfo;
+  const affiliateUrl = buildVerifiedAffiliateUrl(
+    info.affLink,
+    info.originLink || info.productLink || originalLink,
+    subId
+  );
 
   if (!affiliateUrl) {
-    throw new Error("ShopeeCD API did not return a valid affiliate link");
+    throw new Error("Could not create a verified affiliate link");
   }
 
   return {
     affiliateUrl,
-    estimatedCommission: result.commission || null,
-    commissionRate: result.rate || null,
-    productName: result.commission_name || null,
-    productImage: result.product_image || null,
+    estimatedCommission: info.commission != null ? formatVnd(info.commission) : null,
+    commissionRate: info.totalRatePercent != null ? String(info.totalRatePercent) : null,
+    productName: info.productName || null,
+    productImage: info.imageUrl || null,
   };
 }
 
-function buildVerifiedAffiliateUrl(value: string | undefined, originalLink: string, subId: string) {
-  const affiliateUrl = sanitizeUrl(value);
-  if (!affiliateUrl) return "";
+function formatVnd(value: number | string | null | undefined): string | null {
+  if (value === null || value === undefined || value === "") return null;
+  const num = typeof value === "number" ? value : Number(value);
+  if (isNaN(num)) return String(value);
+  return `${new Intl.NumberFormat("vi-VN").format(num)}đ`;
+}
+
+function buildVerifiedAffiliateUrl(value: string | undefined | null, originalLink: string, subId: string) {
+  let candidate = sanitizeUrl(value || "");
+
+  if (!candidate || !candidate.includes("s.shopee.vn/an_redir")) {
+    const targetLink = sanitizeUrl(originalLink);
+    candidate = `https://s.shopee.vn/an_redir?origin_link=${encodeURIComponent(targetLink)}&affiliate_id=${affiliateId}&sub_id=${subId}`;
+  }
 
   try {
-    const parsed = new URL(affiliateUrl);
+    const parsed = new URL(candidate);
     const hostname = parsed.hostname.toLowerCase();
     const isShopeeRedirect = hostname === "s.shopee.vn" && parsed.pathname === "/an_redir";
 
     if (!isShopeeRedirect) {
-      throw new Error("ShopeeCD API returned an affiliate link that cannot be verified");
+      throw new Error("Affiliate link cannot be verified");
     }
 
     if (!parsed.searchParams.get("origin_link")) {

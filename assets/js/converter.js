@@ -86,7 +86,13 @@ async function convertLink() {
       resultProductLink.textContent = affLink;
     }
     if (resultCommission) {
-      resultCommission.textContent = trackedLink.commission || trackedLink.estimated_commission || 'Chưa xác định';
+      let comm = trackedLink.commission || trackedLink.estimated_commission;
+      if (comm != null && typeof comm === 'number') {
+        comm = formatCurrency(comm);
+      } else if (comm != null && typeof comm === 'string' && /^\d+(\.\d+)?$/.test(comm.trim())) {
+        comm = formatCurrency(Number(comm));
+      }
+      resultCommission.textContent = comm || 'Chưa xác định';
     }
     if (resultCommissionRate) {
       const rate = trackedLink.rate || trackedLink.commission_rate;

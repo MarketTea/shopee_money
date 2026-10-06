@@ -16,13 +16,14 @@ Nâng cấp landing page chuyển link Shopee từ bản HTML tĩnh sang hệ th
 - Database: Supabase Postgres.
 - Backend: Supabase Edge Functions.
 - Tracking key: `sub_id` dạng `u_<userShortId>_l_<linkShortId>`.
-- Convert API: `POST https://shopeecd.vercel.app/api/public/shopee/convert-link`.
+- Convert & Product Data API: `GET https://data.addlivetag.com/product-data/product-data.php?url={shopeeUrl}&affiliateId={affiliateId}&subId={subId}` (thay thế cho `shopeecd.vercel.app` đã hết hạn cookie từ 05/10/2026).
+- Secret Header: `X-API-Key` được lưu an toàn trong Supabase Secrets (`ADDLIVETAG_API_KEY`), không để lộ ở client.
 
 ## Những phần đã thêm vào project
 
 - Landing page đã có khu vực đăng nhập Google, trạng thái user, form convert link và lịch sử link.
 - Frontend không còn tự tạo `sub_id` bằng timestamp.
-- Frontend gọi Edge Function `convert-link` để tạo affiliate link có tracking qua ShopeeCD API.
+- Frontend gọi Edge Function `convert-link` để tạo affiliate link có tracking và lấy thông tin hoa hồng, tên/ảnh sản phẩm qua AddLiveTag API.
 - Frontend gọi Edge Function `record-click` khi user mở affiliate link.
 - Migration Supabase đã tạo các bảng:
   - `profiles`
@@ -31,17 +32,20 @@ Nâng cấp landing page chuyển link Shopee từ bản HTML tĩnh sang hệ th
   - `orders`
   - `commission_ledger`
 - RLS đã bật để user chỉ đọc được dữ liệu của chính họ.
-- Edge Function `convert-link` đã tạo và lưu affiliate link, hoa hồng ước tính và rate từ ShopeeCD API.
+- Edge Function `convert-link` lưu affiliate link, hoa hồng ước tính (`commission` VNĐ) và tỷ lệ % (`totalRatePercent`) từ AddLiveTag API.
 - Edge Function `convert-link` ép `affiliate_url` về đúng `SHOPEE_AFFILIATE_ID` và `sub_id` nội bộ trước khi lưu để tránh attribution sang affiliate khác.
 - Edge Function `record-click` đã tạo để lưu click.
 
-## ShopeeCD API response đang dùng
+## AddLiveTag API response đang dùng
 
-- `results[0].shortLink || results[0].longLink` lưu vào `affiliate_links.affiliate_url`.
-- `results[0].commission` lưu vào `affiliate_links.estimated_commission`.
-- `results[0].rate` lưu vào `affiliate_links.commission_rate`.
-- `results[0].commission_name` lưu vào `affiliate_links.product_name`.
-- `results[0].product_image` lưu vào `affiliate_links.product_image`.
+- Endpoint: `GET https://data.addlivetag.com/product-data/product-data.php?url=...&affiliateId=...&subId=...`
+- Header: `X-API-Key: <ADDLIVETAG_API_KEY>`
+- Mapping trường:
+  - `productInfo.affLink` (hoặc build URL `s.shopee.vn/an_redir` chuẩn) -> lưu vào `affiliate_links.affiliate_url`.
+  - `productInfo.commission` (format VNĐ, VD: `33.300đ`) -> lưu vào `affiliate_links.estimated_commission`.
+  - `productInfo.totalRatePercent` (VD: `22.5`) -> lưu vào `affiliate_links.commission_rate`.
+  - `productInfo.productName` -> lưu vào `affiliate_links.product_name`.
+  - `productInfo.imageUrl` -> lưu vào `affiliate_links.product_image`.
 
 ## Việc cần làm để chạy thật
 
@@ -78,6 +82,12 @@ supabase functions deploy record-click
 supabase secrets set SHOPEE_AFFILIATE_ID=17305840167
 ```
 
+- [x] Set AddLiveTag API Key trong Supabase Secrets (không để lộ ở frontend):
+
+```bash
+supabase secrets set ADDLIVETAG_API_KEY=YOUR_ADDLIVETAG_API_KEY
+```
+
 - [x] Mở file `index.html` và thay:
 
 ```js
@@ -88,7 +98,7 @@ const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 - [x] Test login Google trên local domain đã khai báo redirect.
 - [x] Test convert link Shopee sau khi login.
 - [x] Kiểm tra bảng `affiliate_links` có record mới với đúng `user_id` và `sub_id`.
-- [x] Kiểm tra bảng `affiliate_links` có `estimated_commission` và `commission_rate` từ ShopeeCD API.
+- [x] Kiểm tra bảng `affiliate_links` có `estimated_commission` và `commission_rate` từ AddLiveTag API.
 - [ ] Bấm mở link Shopee và kiểm tra bảng `clicks` có record mới.
 
 ## Việc cần làm tiếp cho giai đoạn đối soát hoa hồng
@@ -118,9 +128,9 @@ const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 - Chưa login thì không convert link được.
 - Login Google thành công thì user được nhận diện.
 - Convert link tạo record trong `affiliate_links`.
-- Edge Function gọi ShopeeCD API với `originalLink`, `affiliateId`, `subId1`.
-- Affiliate URL được lấy từ `results[0].shortLink` hoặc `results[0].longLink`.
-- Lịch sử link hiển thị hoa hồng ước tính và phần trăm rate nếu ShopeeCD API trả dữ liệu.
+- Edge Function gọi AddLiveTag API với `url`, `affiliateId`, `subId` và header `X-API-Key`.
+- Affiliate URL được lấy từ `productInfo.affLink` (hoặc fallback `s.shopee.vn/an_redir`).
+- Giao diện và lịch sử link hiển thị hoa hồng ước tính (`commission` VNĐ) và phần trăm rate (`totalRatePercent`) từ AddLiveTag API.
 - `sub_id` có thể truy ngược về `user_id`.
 - Lịch sử link chỉ hiển thị link của user hiện tại.
 - Click affiliate link tạo record trong `clicks`.
@@ -130,7 +140,7 @@ const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 ## Lưu ý kỹ thuật
 
 - Không đưa email, số điện thoại hoặc thông tin cá nhân thật vào `sub_id`.
-- Không để service role key trong frontend.
-- `SUPABASE_ANON_KEY` được phép đặt ở frontend, nhưng `SUPABASE_SERVICE_ROLE_KEY` chỉ dùng trong Edge Function.
+- Không để service role key và `ADDLIVETAG_API_KEY` trong frontend client.
+- `SUPABASE_ANON_KEY` được phép đặt ở frontend, nhưng `SUPABASE_SERVICE_ROLE_KEY` và `ADDLIVETAG_API_KEY` chỉ dùng trong Edge Function qua `Deno.env.get()`.
 - Khi triển khai production, cần dùng HTTPS để Google OAuth và clipboard hoạt động ổn định.
 - Nếu dùng CDN Supabase JS trong HTML, cần đảm bảo domain production có thể tải được CDN.

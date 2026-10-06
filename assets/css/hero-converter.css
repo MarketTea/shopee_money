@@ -441,6 +441,21 @@
   display: none;
 }
 
+.notes-list li.note-highlight-notice {
+  background: #fefce8;
+  border: 1.5px solid #eab308;
+  color: #854d0e;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+
+.notes-list li.note-highlight-notice::before {
+  display: none;
+}
+
 .notes-list li.note-highlight-support {
   background: #eff6ff;
   border: 1.5px solid #3b82f6;

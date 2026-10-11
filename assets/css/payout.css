@@ -201,6 +201,8 @@
   max-height: 85dvh;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
 }
 
 .payout-dialog[open] {
@@ -649,6 +651,10 @@
   max-width: 580px;
 }
 
+.withdraw-dialog .modal-content {
+  padding: 1.5rem 1.5rem 2.5rem;
+}
+
 .withdraw-summary {
   background: #f8f9fa;
   border-radius: 12px;
@@ -767,6 +773,7 @@
   border-top: 1px solid #eee;
   padding-top: 1.5rem;
   margin-top: 2rem;
+  padding-bottom: 2rem;
 }
 
 .withdraw-history-title {
@@ -779,51 +786,99 @@
 .withdraw-history-list {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  max-height: 200px;
-  overflow-y: auto;
+  gap: 0.6rem;
+  max-height: none;
+  overflow: visible;
 }
 
 .withdraw-history-item {
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.withdraw-history-item:hover {
+  border-color: #000;
+  box-shadow: 2px 2px 0 #000;
+}
+
+.withdraw-history-item.is-expanded {
+  border: var(--border-thin);
+  box-shadow: var(--shadow-sm);
+  background: #fff;
+}
+
+.withdraw-history-summary {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-radius: 8px;
-  padding: 0.55rem 0.8rem;
+  padding: 0.65rem 0.85rem;
   gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  background: #f8f9fa;
+  transition: background 0.15s ease;
+}
+
+.withdraw-history-item:hover .withdraw-history-summary {
+  background: #fff;
+}
+
+.withdraw-history-item.is-expanded .withdraw-history-summary {
+  background: #fffdf5;
+  border-bottom: 1.5px dashed #000;
 }
 
 .wh-left {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  gap: 0.15rem;
+  min-width: 0;
 }
 
 .wh-date {
-  color: #555;
-  font-size: 0.78rem;
-  font-weight: 500;
+  color: #333;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 .wh-orders {
-  color: #888;
+  color: #666;
+  font-size: 0.72rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.wh-expand-hint {
+  color: var(--orange);
+  font-weight: 700;
   font-size: 0.7rem;
+  transition: opacity 0.15s;
 }
 
 .wh-right {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 0.15rem;
+  gap: 0.2rem;
   flex-shrink: 0;
 }
 
 .wh-amount {
   color: #1A0A05;
-  font-size: 0.88rem;
-  font-weight: 700;
+  font-size: 0.95rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+
+.wh-status-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 .wh-status {
@@ -831,6 +886,19 @@
   font-weight: 700;
   padding: 0.12rem 0.45rem;
   border-radius: 4px;
+}
+
+.wh-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.wh-chevron.is-rotated {
+  transform: rotate(180deg);
+  color: var(--orange);
 }
 
 .wr-pending {
@@ -851,6 +919,210 @@
 .wr-rejected {
   background: rgba(220, 38, 38, 0.12);
   color: #dc2626;
+}
+
+/* ── Chi tiết các đơn hàng trong lần rút tiền ── */
+.withdraw-history-detail {
+  padding: 0.75rem 0.85rem;
+  background: #fafaf9;
+  animation: whSlideDown 0.2s ease-out;
+}
+
+@keyframes whSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.wh-detail-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.wh-detail-heading {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #1A0A05;
+  margin-bottom: 0.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.wh-suborders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.wh-suborder-card {
+  background: #ffffff;
+  border: 1.5px solid #000;
+  border-radius: 6px;
+  padding: 0.55rem 0.75rem;
+  box-shadow: 2px 2px 0px #000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.wh-suborder-card:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px #000;
+}
+
+.wh-suborder-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.wh-order-num {
+  background: var(--yellow);
+  color: #000;
+  border: 1px solid #000;
+  font-size: 0.65rem;
+  font-weight: 900;
+  padding: 0.05rem 0.35rem;
+  border-radius: 3px;
+  margin-right: 0.25rem;
+  display: inline-block;
+  line-height: 1.2;
+}
+
+.wh-suborder-name {
+  color: #000;
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1.35;
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.wh-suborder-share-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.wh-suborder-share {
+  color: #15803d;
+  font-size: 0.88rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.wh-suborder-share-sub {
+  color: #777;
+  font-size: 0.62rem;
+  font-weight: 600;
+}
+
+.wh-suborder-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  padding-top: 0.3rem;
+  border-top: 1px dashed #e5e7eb;
+}
+
+.wh-suborder-meta {
+  color: #555;
+  font-size: 0.7rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.wh-meta-tag strong {
+  color: #000;
+  font-family: monospace;
+  font-size: 0.72rem;
+}
+
+.wh-meta-divider {
+  color: #cbd5e1;
+}
+
+.wh-suborder-badge {
+  font-size: 0.63rem;
+  font-weight: 800;
+  padding: 0.12rem 0.45rem;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+
+.wh-suborder-badge.is-approved,
+.wh-suborder-badge.is-paid {
+  background: #dcfce7;
+  color: #15803d;
+  border-color: #86efac;
+}
+
+.wh-suborder-badge.is-pending {
+  background: #fef3c7;
+  color: #b45309;
+  border-color: #fde68a;
+}
+
+.wh-suborder-badge.is-rejected {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+
+.wh-suborder-bonus {
+  background: #fff8e1;
+  border: 1.5px dashed #f59e0b;
+  border-radius: 6px;
+  padding: 0.45rem 0.7rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.76rem;
+  color: #b45309;
+  font-weight: 700;
+}
+
+.wh-detail-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.3rem;
+  padding-top: 0.45rem;
+  border-top: 1.5px solid #000;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #000;
+}
+
+.wh-footer-amount {
+  color: #15803d;
+  font-size: 0.95rem;
+  font-weight: 900;
+}
+
+.wh-detail-empty {
+  color: #666;
+  font-size: 0.76rem;
+  font-style: italic;
+  text-align: center;
+  padding: 0.6rem 0;
 }
 
 /* ── Bonus row trong withdraw summary ── */

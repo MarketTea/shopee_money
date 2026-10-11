@@ -471,7 +471,8 @@
   display: none;
 }
 
-.note-admin-link {
+.note-admin-link,
+.note-ref-link {
   color: #1d4ed8;
   font-weight: 800;
   text-decoration: underline;
@@ -479,7 +480,8 @@
   transition: color 0.15s;
 }
 
-.note-admin-link:hover {
+.note-admin-link:hover,
+.note-ref-link:hover {
   color: var(--orange);
 }
 

@@ -455,3 +455,136 @@ header {
   background: #f9fafb;
   border-color: #cbd5e1;
 }
+
+/* ── BOTTOM NAVIGATION (Mobile Only) ── */
+.bottom-nav {
+  display: none; /* Hidden by default, shown on mobile via responsive.css */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  background: #ffffff;
+  border-top: var(--border-thick);
+  box-shadow: 0 -4px 0px #000;
+  height: 64px;
+  padding: 0;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.bottom-nav-inner {
+  display: flex;
+  align-items: stretch;
+  height: 100%;
+  width: 100%;
+}
+
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  text-decoration: none;
+  color: #6b7280;
+  font-size: 0.68rem;
+  font-weight: 600;
+  font-family: 'Inter', system-ui, sans-serif;
+  letter-spacing: 0.01em;
+  padding: 6px 4px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.18s ease, transform 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.bottom-nav-item svg {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  transition: transform 0.18s ease, color 0.18s ease;
+  stroke: currentColor;
+}
+
+.bottom-nav-item:hover {
+  color: #374151;
+}
+
+.bottom-nav-item:active {
+  transform: scale(0.93);
+}
+
+/* Active tab state */
+.bottom-nav-item.active {
+  color: var(--orange, #ee4d2d);
+  font-weight: 800;
+}
+
+.bottom-nav-item.active svg {
+  transform: translateY(-2px);
+  filter: drop-shadow(0 2px 0 rgba(238, 77, 45, 0.25));
+}
+
+/* Active indicator bar on top */
+.bottom-nav-item.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 15%;
+  right: 15%;
+  height: 3px;
+  background: var(--orange, #ee4d2d);
+  border-radius: 0 0 4px 4px;
+}
+
+/* Center CTA tab (Trang chủ) — default: plain icon like other tabs */
+.bottom-nav-item.cta-tab {
+  color: #6b7280;
+}
+
+/* Wrap always visible so SVG inside is always shown */
+.bottom-nav-item.cta-tab .bottom-nav-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 36px;
+  margin-bottom: 1px;
+  /* No background/border/shadow when inactive */
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  border-radius: 14px;
+  transition: background 0.18s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+/* ACTIVE state: show yellow CTA box */
+.bottom-nav-item.cta-tab.active {
+  color: #000;
+}
+
+.bottom-nav-item.cta-tab.active .bottom-nav-icon-wrap {
+  background: var(--yellow, #FFDE00);
+  border: var(--border-thin);
+  box-shadow: var(--shadow-sm);
+}
+
+.bottom-nav-item.cta-tab.active:active .bottom-nav-icon-wrap {
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-md);
+}
+
+.bottom-nav-item.cta-tab.active svg {
+  width: 20px;
+  height: 20px;
+  transform: none;
+}
+
+/* No orange indicator bar for cta-tab (yellow box replaces it) */
+.bottom-nav-item.cta-tab.active::before {
+  display: none;
+}

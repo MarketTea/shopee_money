@@ -54,11 +54,6 @@ body::before {
   z-index: 0;
 }
 
-/* ── DIAGONAL PATTERN ── */
-body::after {
-  display: none;
-}
-
 section,
 footer {
   position: relative;

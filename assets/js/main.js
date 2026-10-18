@@ -155,18 +155,22 @@ function updateDrawerUser() {
 function toggleUserMenu(event) {
   if (event) event.stopPropagation();
   const menu = document.getElementById('drawerUserDropdown');
-  if (menu) {
-    menu.classList.toggle('show');
-  }
+  const pill = document.getElementById('drawerUserCard');
+  if (!menu) return;
+
+  const isOpen = menu.classList.toggle('show');
+  if (pill) pill.setAttribute('aria-expanded', String(isOpen));
 }
 
 // Close user dropdown when clicking outside
 document.addEventListener('click', (e) => {
   const menu = document.getElementById('drawerUserDropdown');
+  const wrap = document.getElementById('drawerUserWrap');
   const pill = document.getElementById('drawerUserCard');
   if (menu && menu.classList.contains('show')) {
-    if (pill && !pill.contains(e.target)) {
+    if (wrap && !wrap.contains(e.target)) {
       menu.classList.remove('show');
+      if (pill) pill.setAttribute('aria-expanded', 'false');
     }
   }
 });

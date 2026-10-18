@@ -6,6 +6,33 @@
 }
 
 
+/* ══════════════════════════════════════════════
+   HEADER: chống tràn khi đã thêm khu vực user (login / avatar)
+   - 901–1100px: thu gọn nav
+   - ≤900px: chuyển sang hamburger + drawer
+   ══════════════════════════════════════════════ */
+@media (max-width: 1100px) {
+  .desktop-nav a {
+    margin-left: 0.9rem;
+    font-size: 0.85rem;
+  }
+
+  .nav-login-btn {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .desktop-nav {
+    display: none !important;
+  }
+
+  .hamburger-btn {
+    display: flex !important;
+  }
+}
+
 @media (max-width: 768px) {
   /* Hide desktop nav on mobile */
   .desktop-nav {
@@ -23,9 +50,40 @@
   }
 
   header {
-    padding: 0.75rem 4%;
-    gap: 12px;
-    justify-content: center;
+    padding: 0.65rem 4%;
+    gap: 10px;
+    justify-content: space-between;
+  }
+
+  .header-user-wrapper {
+    margin-left: 0;
+  }
+
+  .nav-login-btn {
+    padding: 0.35rem 0.65rem;
+  }
+
+  .nav-login-text {
+    display: none;
+  }
+
+  .nav-user-name,
+  .nav-user-caret {
+    display: none;
+  }
+
+  .nav-user-pill {
+    padding: 2px;
+  }
+
+  .nav-user-avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  .nav-user-dropdown {
+    right: -6px;
+    width: 250px;
   }
 
   .hero {

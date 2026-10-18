@@ -311,6 +311,16 @@ header {
   gap: 8px;
 }
 
+/* Wrapper để dropdown (đã tách khỏi pill) định vị đúng */
+.drawer-user-pill-wrap {
+  position: relative;
+}
+
+/* Chưa đăng nhập thì ẩn cả wrapper (JS gắn .is-logged-in lên <button>) */
+.drawer-user-pill-wrap:not(:has(.drawer-user-pill.is-logged-in)) {
+  display: none;
+}
+
 /* User Pill Card when logged in */
 .drawer-user-pill {
   display: none;
@@ -325,6 +335,15 @@ header {
   cursor: pointer;
   user-select: none;
   transition: border-color 0.15s, box-shadow 0.15s;
+
+  /* Reset style mặc định của <button> */
+  font-family: inherit;
+  font-size: inherit;
+  color: #1f2937;
+  text-align: left;
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 .drawer-user-pill:hover {
@@ -587,4 +606,249 @@ header {
 /* No orange indicator bar for cta-tab (yellow box replaces it) */
 .bottom-nav-item.cta-tab.active::before {
   display: none;
+}
+
+/* ══════════════════════════════════════════════
+   HEADER USER PROFILE (Desktop & Mobile)
+   Neo-Brutalism Style
+   ══════════════════════════════════════════════ */
+.header-user-wrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin-left: 1.2rem;
+  flex-shrink: 0;
+}
+
+/* Login Button in Header */
+.nav-login-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  color: #000000;
+  border: var(--border-thin);
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+
+.nav-login-btn:hover {
+  transform: translate(-1.5px, -1.5px);
+  box-shadow: var(--shadow-md);
+  background: var(--bg);
+}
+
+.nav-login-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: none;
+}
+
+/* User Pill in Header */
+.nav-user-pill {
+  display: none; /* Managed by JS auth state */
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: var(--border-thin);
+  box-shadow: var(--shadow-sm);
+  border-radius: 999px;
+  padding: 4px 12px 4px 5px;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+
+  /* Reset style mặc định của <button> (pill giờ là button để keyboard dùng được) */
+  font-family: inherit;
+  font-size: inherit;
+  color: #000;
+  text-align: left;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.nav-user-pill:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-md);
+  background: #fff9f5;
+}
+
+.nav-user-pill:active {
+  transform: translate(1px, 1px);
+  box-shadow: none;
+}
+
+.nav-user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #000;
+  background: #fff1ee;
+  flex-shrink: 0;
+}
+
+.nav-user-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #000;
+  max-width: 140px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-user-caret {
+  color: #555;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.nav-user-pill.open .nav-user-caret,
+.nav-user-pill[aria-expanded="true"] .nav-user-caret {
+  transform: rotate(180deg);
+}
+
+/* Header User Dropdown */
+.nav-user-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 260px;
+  background: #ffffff;
+  border: var(--border-thick);
+  box-shadow: var(--shadow-md);
+  border-radius: var(--radius);
+  padding: 6px 0;
+  z-index: 1000;
+  box-sizing: border-box;
+}
+
+.nav-user-dropdown.show {
+  display: block;
+  animation: dropdownPop 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes dropdownPop {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.dropdown-user-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #fafafa;
+  border-bottom: 1px solid #eee;
+}
+
+.dropdown-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 2px solid #000;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #fff1ee;
+}
+
+.dropdown-user-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.dropdown-name {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+.dropdown-email {
+  font-size: 0.74rem;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: #eee;
+  margin: 4px 0;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #1f2937;
+  text-decoration: none;
+  background: none;
+  border: none;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  font-family: inherit;
+}
+
+.dropdown-item:hover {
+  background: var(--bg);
+  color: var(--orange);
+}
+
+.dropdown-item svg {
+  flex-shrink: 0;
+  color: #6b7280;
+  transition: color 0.12s;
+}
+
+.dropdown-item:hover svg {
+  color: var(--orange);
+}
+
+.dropdown-item.admin-item {
+  background: #FFFBE6;
+  font-weight: 700;
+  color: #856D00;
+}
+
+.dropdown-item.admin-item svg {
+  color: #856D00;
+}
+
+.dropdown-item.admin-item:hover {
+  background: #FFF3CC;
+  color: #554400;
+}
+
+.dropdown-item.logout-action {
+  color: #ef4444;
+}
+
+.dropdown-item.logout-action svg {
+  color: #ef4444;
+}
+
+.dropdown-item.logout-action:hover {
+  background: #fee2e2;
+  color: #b91c1c;
 }

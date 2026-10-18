@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin – Quản Lý Deal Hot | HoanTienNgay</title>
+  <!-- No index for admin page -->
+  <meta name="robots" content="noindex, nofollow" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="assets/css/base.css?v=20261024" />
+  <link rel="stylesheet" href="assets/css/header.css?v=20261024" />
+  <link rel="stylesheet" href="assets/css/payout.css?v=20261024" />
+  <link rel="stylesheet" href="assets/css/admin-deals.css?v=20261024" />
+</head>
+
+<body>
+
+  <!-- Minimal Admin Header -->
+  <header class="admin-topbar">
+    <a class="logo" href="index.html">
+      <img src="assets/images/logo.png" alt="HoanTienNgay" class="logo-img" />
+      HoanTienNgay
+    </a>
+    <div class="admin-topbar-links">
+      <a href="deals.html" class="admin-topbar-link" target="_blank" rel="noopener">
+        🔗 Xem trang Deal
+      </a>
+      <a href="index.html" class="admin-topbar-home">← Trang chủ</a>
+    </div>
+  </header>
+
+  <main class="admin-page">
+
+    <!-- ── LOGIN GUARD ── -->
+    <div id="adminLoginSection" style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:60vh; gap:1.5rem; text-align:center;">
+      <div class="admin-login-card">
+        <div class="admin-login-icon">🔐</div>
+        <div class="admin-login-title">Khu vực Admin</div>
+        <div class="admin-login-sub">Đăng nhập bằng tài khoản Google của bạn để quản lý Deal Hot.</div>
+        <button class="btn-convert" onclick="signInWithGoogle()" style="width:100%; justify-content:center;">
+          <svg width="18" height="18" viewBox="0 0 24 24">
+            <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.4 9 5 12 5z" />
+            <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z" />
+            <path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 12.3 0 15.2s.7 5.5 1.9 7.9l3.7-2.9z" />
+            <path fill="#34A853" d="M12 23.5c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.4-6.4-5.2L1.9 16.5C3.7 20.2 7.5 23.5 12 23.5z" />
+          </svg>
+          Đăng nhập Google
+        </button>
+      </div>
+    </div>
+
+    <!-- ── MAIN ADMIN UI ── -->
+    <div id="adminMainSection" style="display:none;">
+
+      <!-- Admin Header Bar -->
+      <div class="admin-header-bar">
+        <div class="admin-header-title">
+          <h1>🔥 Quản Lý Deal Hot</h1>
+          <span class="admin-badge-role">KOL ADMIN</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.75rem;">
+          <div class="admin-user-chip">
+            👤 <span id="adminUserEmail">...</span>
+          </div>
+          <button onclick="signOut()" style="font-size:0.82rem; font-weight:700; color:#991B1B; background:#FEE2E2; border:1.5px solid #F87171; border-radius:var(--radius-sm); padding:0.35rem 0.85rem; cursor:pointer; font-family:inherit;">
+            Đăng xuất
+          </button>
+        </div>
+      </div>
+
+      <!-- ══ SECTION 1: Paste & Parse ══ -->
+      <section class="admin-section">
+        <div class="admin-section-header">
+          <span style="font-size:1.3rem;">📋</span>
+          <h2 class="admin-section-title">Paste Deal Từ Group</h2>
+        </div>
+        <div class="admin-section-body">
+          <p style="font-size:0.88rem; color:var(--muted); margin-bottom:1rem; line-height:1.6;">
+            Copy toàn bộ nội dung từ group KOC Shopee và paste vào đây. Hệ thống sẽ tự động nhận dạng các campaign, sản phẩm, voucher và link affiliate.
+          </p>
+          <textarea
+            id="dealRawContent"
+            class="deal-paste-area"
+            placeholder="Paste nội dung từ group vào đây...
+
+Ví dụ:
+🔥 SUPER BRAND DAY 17.10 – 20.10 - UNILEVER
+KOC ơi, siêu hội deal tới rồi!
+💸 HOA HỒNG LÊN ĐẾN 14%
+...
+
+===============
+🎉 SUPER BRANDDAY x Innisfree
+..."
+          ></textarea>
+
+          <div class="paste-hint">
+            💡 Mỗi chiến dịch phân cách nhau bằng dòng <code>===</code>. Có thể paste nhiều chiến dịch cùng lúc!
+          </div>
+
+          <div class="admin-actions-row">
+            <button class="admin-btn-primary" onclick="previewParsedContent()" id="previewBtn">
+              🔍 Preview Parse
+            </button>
+            <button class="admin-btn-secondary" onclick="document.getElementById('dealRawContent').value = ''; document.getElementById('parsePreviewSection').style.display = 'none';">
+              🗑️ Xóa
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ SECTION 2: Parse Preview ══ -->
+      <section class="admin-section" id="parsePreviewSection" style="display:none;">
+        <div class="admin-section-header">
+          <span style="font-size:1.3rem;">✅</span>
+          <h2 class="admin-section-title">Kết Quả Parse</h2>
+        </div>
+        <div class="admin-section-body">
+          <div id="parsePreview"></div>
+          <div id="publishProgress"></div>
+          <div class="admin-actions-row" style="margin-top:1.25rem;">
+            <button class="admin-btn-publish" onclick="publishAllCampaigns()" id="publishAllBtn" disabled>
+              🚀 Publish Tất Cả
+            </button>
+            <button class="admin-btn-secondary" onclick="document.getElementById('parsePreviewSection').style.display='none';">
+              ← Sửa lại
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ SECTION 3: Existing Campaigns ══ -->
+      <section class="admin-section">
+        <div class="admin-section-header" style="justify-content:space-between;">
+          <div style="display:flex; align-items:center; gap:0.6rem;">
+            <span style="font-size:1.3rem;">📊</span>
+            <h2 class="admin-section-title">Campaigns Hiện Tại</h2>
+          </div>
+          <button class="admin-btn-secondary" onclick="loadExistingCampaigns()" style="font-size:0.8rem; padding:0.35rem 0.9rem;">
+            🔄 Refresh
+          </button>
+        </div>
+        <div id="existingCampaignsList">
+          <div class="admin-loading">Đang tải...</div>
+        </div>
+      </section>
+
+      <!-- ══ SECTION 4: Hướng dẫn ══ -->
+      <section class="admin-section">
+        <div class="admin-section-header">
+          <span style="font-size:1.3rem;">📖</span>
+          <h2 class="admin-section-title">Hướng Dẫn Sử Dụng</h2>
+        </div>
+        <div class="admin-section-body">
+          <div style="display:flex; flex-direction:column; gap:0.75rem;">
+            <div style="display:flex; gap:1rem; align-items:flex-start; padding:0.75rem 1rem; background:var(--bg); border:var(--border-thin); border-radius:var(--radius);">
+              <span style="font-size:1.4rem; flex-shrink:0;">1️⃣</span>
+              <div>
+                <div style="font-weight:800; font-size:0.9rem;">Copy nội dung từ group</div>
+                <div style="font-size:0.82rem; color:var(--muted); margin-top:2px;">Chọn toàn bộ text từ tin nhắn group KOC Shopee (bao gồm nhiều campaign)</div>
+              </div>
+            </div>
+            <div style="display:flex; gap:1rem; align-items:flex-start; padding:0.75rem 1rem; background:var(--bg); border:var(--border-thin); border-radius:var(--radius);">
+              <span style="font-size:1.4rem; flex-shrink:0;">2️⃣</span>
+              <div>
+                <div style="font-weight:800; font-size:0.9rem;">Paste và Preview</div>
+                <div style="font-size:0.82rem; color:var(--muted); margin-top:2px;">Paste vào ô text, click "Preview Parse" để xem kết quả nhận dạng tự động</div>
+              </div>
+            </div>
+            <div style="display:flex; gap:1rem; align-items:flex-start; padding:0.75rem 1rem; background:var(--bg); border:var(--border-thin); border-radius:var(--radius);">
+              <span style="font-size:1.4rem; flex-shrink:0;">3️⃣</span>
+              <div>
+                <div style="font-weight:800; font-size:0.9rem;">Publish</div>
+                <div style="font-size:0.82rem; color:var(--muted); margin-top:2px;">Click "Publish" để đưa deals lên web ngay lập tức. User sẽ thấy trên trang Deal Hot!</div>
+              </div>
+            </div>
+            <div style="display:flex; gap:1rem; align-items:flex-start; padding:0.75rem 1rem; background:#FFF7CC; border:2px solid #F0C000; border-radius:var(--radius);">
+              <span style="font-size:1.4rem; flex-shrink:0;">⚠️</span>
+              <div>
+                <div style="font-weight:800; font-size:0.9rem;">Lưu ý về Parser</div>
+                <div style="font-size:0.82rem; color:#856D00; margin-top:2px;">Parser hoạt động tốt nhất khi nội dung có dấu phân cách <code>===</code> giữa các campaign. Các link affiliate <code>shopee.vn/a-i.*</code> sẽ được tự động nhận dạng.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /adminMainSection -->
+  </main>
+
+  <!-- Dialog xác nhận dùng chung (thay confirm() của browser) -->
+  <dialog id="adminConfirmDialog" class="payout-dialog" aria-labelledby="adminConfirmTitle">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="adminConfirmTitle">Xác nhận</h3>
+        <button type="button" class="modal-close" id="adminConfirmClose" aria-label="Đóng">&times;</button>
+      </div>
+      <p class="admin-confirm-message" id="adminConfirmMessage"></p>
+      <div class="admin-confirm-actions">
+        <button type="button" class="admin-btn-secondary" id="adminConfirmCancel">Hủy</button>
+        <button type="button" class="admin-btn-danger" id="adminConfirmOk">Đồng ý</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="assets/js/config.js?v=20261024"></script>
+  <script src="assets/js/utils.js?v=20261024"></script>
+  <script src="assets/js/deal-parser.js?v=20261024"></script>
+  <script src="assets/js/admin-deals.js?v=20261024"></script>
+  <script>
+    // Auth functions inline (không dùng auth.js đầy đủ vì admin page có logic khác)
+    function getAuthRedirectUrl() {
+      return `${window.location.origin}${window.location.pathname}`;
+    }
+    async function signInWithGoogle() {
+      if (!supabaseClient) { showToast('⚠️ Supabase chưa cấu hình!'); return; }
+      await supabaseClient.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: getAuthRedirectUrl() }
+      });
+    }
+    async function signOut() {
+      if (!supabaseClient) return;
+      await supabaseClient.auth.signOut();
+      window.location.reload();
+    }
+  </script>
+
+</body>
+
+</html>

@@ -10,6 +10,7 @@ const supabaseClient = SUPABASE_READY && window.supabase
 const PAYOUT_QR_BUCKET = 'payout-qr';
 const PAYOUT_QR_MAX_BYTES = 2 * 1024 * 1024;
 const PAYOUT_QR_ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
+const SHOPEE_AFFILIATE_ID = '17305840167';
 let currentUser = null;
 let currentAffiliateLinkId = null;
 let payoutQrFile = null;

@@ -3,7 +3,8 @@
 > Tài liệu này là **nguồn tham chiếu duy nhất** cho tính năng Deal Hot: luồng dữ liệu, hợp đồng tracking,
 > phân quyền, cách test và các điểm cần lưu ý khi bảo trì.
 >
-> Cập nhật lần cuối: sau đợt hardening `202610190001` + `202610200001`, đợt sửa UI product grid và đợt tinh gọn nav.
+> Cập nhật lần cuối: đợt v6 (`202610230001` — action links: đủ định dạng link Shopee), sau đợt hardening
+> `202610190001` + `202610200001`, đợt sửa UI product grid và đợt tinh gọn nav.
 
 ---
 
@@ -66,12 +67,15 @@ Các điểm logic quan trọng (`assets/js/admin-deals.js`):
 
 ```text
 [deals.html] loadDeals()
-   │  select cột tường minh + deal_products
+   │  select cột tường minh + deal_products (+ action_links)
    │  sort: còn hạn trước, hết hạn sau        │  countdown: 1 ticker duy nhất
    ▼
-[Click "Mua ngay"]
+[Click "Mua ngay" / "Xem toàn bộ gian hàng" / CTA sự kiện]
    │
    ├─ deal hết hạn? ──► toast + không làm gì (nút đã disabled)
+   │
+   ├─ CTA sự kiện / voucher / bộ sưu tập, nút gian hàng ──►
+   │        openEventLinkWithAffiliate(url)  (bọc an_redir + sub_id tại thời điểm click)
    │
    ├─ chưa đăng nhập ──► modal 2 lựa chọn
    │        ├─ "Đăng nhập nhận hoàn tiền" ──► lưu {id,ts} vào localStorage ──► OAuth
@@ -104,7 +108,8 @@ Sau khi OAuth quay lại: `initDeals()` **chờ** `waitForAuth()` (tối đa 4s)
 | `start_date` / `end_date` | date | CHECK: `end_date >= start_date` (constraint `NOT VALID` — chỉ áp row mới) |
 | `highlights` | text[] | tối đa 6 |
 | `voucher_codes` | jsonb | `[{ "code": "...", "desc": "..." }]` |
-| `store_url` | text | link gian hàng (không phải `/a-i.`, `/user/`, `/m/`…) |
+| `store_url` | text | link gian hàng (không phải `/a-i.`, `/product/`, `/user/`, `/m/`…) |
+| `action_links` | jsonb | CTA sự kiện/voucher/bộ sưu tập `[{label,url,cta_label}]` (migration `202610230001`) |
 | `raw_content` | text | **nội dung gốc** — client KHÔNG đọc được (xem §4.3) |
 | `is_active` | bool | public chỉ đọc row `true` |
 | `sort_order` | int | |
@@ -143,6 +148,23 @@ Sau khi OAuth quay lại: `initDeals()` **chờ** `waitForAuth()` (tối đa 4s)
 
 > **Không còn policy INSERT nào cho client** trên `affiliate_links`/`clicks` — chỉ RPC SECURITY DEFINER
 > (và edge function `convert-link` dùng service_role) được ghi.
+
+### 3.5 Định dạng link được parser nhận
+
+| Dạng link | Ví dụ | Kết quả |
+| :--- | :--- | :--- |
+| Sản phẩm affiliate | `shopee.vn/a-i.<shopId>.<itemId>` | `deal_products.affiliate_url` |
+| Sản phẩm (slug bất kỳ) | `shopee.vn/abc-i.<shopId>.<itemId>` | `deal_products.affiliate_url` |
+| Sản phẩm chuẩn | `shopee.vn/product/<shopId>/<itemId>` | `deal_products.affiliate_url` |
+| Gian hàng | `shopee.vn/<shop_username>` (`.`/`_` OK) | `deal_campaigns.store_url` → nút "Xem toàn bộ gian hàng" |
+| Landing / sale / ví voucher | `shopee.vn/m/...`, `/user/voucher-wallet/`, `/voucher...` | `action_links` (CTA) |
+| Trang có query / bộ sưu tập | `shopee.vn/<shop>?shopCollection=<id>` | `action_links` (CTA "Xem Bộ Sưu Tập") |
+
+- Parser bóc **cả** sản phẩm **và** `action_links` trong cùng campaign (bài post thường trộn nhiều dạng).
+- Mọi link Shopee đều được bọc `s.shopee.vn/an_redir` trước khi mở: sản phẩm qua RPC (server sinh `sub_id`),
+  CTA/gian hàng qua `openEventLinkWithAffiliate()` (client sinh `sub_id` tại thời điểm click).
+- Link không rơi vào các nhóm trên sẽ bị bỏ. Test `mọi link Shopee trong fixture đều được convert`
+  sẽ fail nếu `plans/deal_hot.txt` có dạng mới chưa được xử lý → thêm regex + test khi gặp dạng mới.
 
 ---
 
@@ -243,6 +265,7 @@ CSV Shopee (Sub_id1) ──match──► affiliate_links.sub_id ──► user_
 | `supabase/migrations/202610180001_deal_affiliate_links.sql` | `click_count`, RPC bản đầu | đã push (RPC đã bị thay) |
 | `supabase/migrations/202610190001_deal_hardening.sql` | `deal_admins`, RLS admin, RPC mới, constraints, index, seed `deal_guest` | **bắt buộc chạy** |
 | `supabase/migrations/202610200001_deal_raw_content_private.sql` | ẩn `raw_content` | **bắt buộc chạy** |
+| `supabase/migrations/202610230001_deal_action_links.sql` | cột `action_links` + grant select mức cột | **bắt buộc chạy trước khi publish** |
 | `assets/js/deal-parser.js` | regex engine (hàm thuần, không DOM) | có test |
 | `assets/js/deals.js` | data + render + modal + countdown + buy flow | |
 | `assets/js/admin-deals.js` | preview, publish, rollback, CRUD, `adminConfirm()` | có test |
@@ -280,11 +303,13 @@ select a.user_id, u.email from public.deal_admins a join auth.users u on u.id = 
 ### 8.1 Unit test (không cần mạng)
 
 ```bash
-node --test assets/js/*.test.js        # 15 test: 12 parser + 3 publish logic
+node --test assets/js/*.test.js        # 19 test: 16 parser + 3 publish logic
 ```
 
 Parser test khoá lại các bug đã từng xảy ra: ngày `2026-16-15`, brand rác (`NGÀ`, `50%`),
-tên sản phẩm là URL, voucher trùng/mã rác.
+tên sản phẩm là URL, voucher trùng/mã rác, giá `1.5 triệu` bị đọc thành ngày,
+và test "mọi link Shopee trong fixture đều được convert" (thêm dạng link mới mà quên
+xử lý là test fail ngay).
 
 Publish test khoá lại: rollback khi products lỗi, không tạo bản trùng khi Preview lại,
 đổi ngày thì được publish lại.
@@ -299,8 +324,9 @@ where proname = 'generate_deal_affiliate_link';
 -- B. Admin đã seed
 select a.user_id, u.email from public.deal_admins a join auth.users u on u.id = a.user_id;
 
--- C. raw_content đã ẩn
+-- C. raw_content đã ẩn, action_links đọc được
 select has_column_privilege('anon', 'public.deal_campaigns', 'raw_content', 'select');       -- false
+select has_column_privilege('anon', 'public.deal_campaigns', 'action_links', 'select');      -- true
 select has_column_privilege('anon', 'public.deal_campaigns', 'title', 'select');             -- true
 
 -- D. Link guest
@@ -314,10 +340,12 @@ where affiliate_url not like '%sub_id=' || sub_id || '%';
 ### 8.3 E2E checklist
 
 1. `admin.html` → login email admin → thấy "Campaigns Hiện Tại" (không thấy = chưa có trong `deal_admins`).
-2. Paste `plans/deal_hot.txt` → **Preview Parse** → đúng **7 campaign**, ngày `17/10–20/10`, `15–16/10`, `15–20/10`,
-   brand `UNILEVER / Innisfree / HALIO / LANCOME`, sửa được ngày.
+2. Paste `plans/deal_hot.txt` → **Preview Parse** → đúng **11 campaign**, 29 sản phẩm, 9 CTA sự kiện;
+   ngày `17/10–20/10`, `15–16/10`, `15–20/10`; brand `UNILEVER / Innisfree / HALIO / LANCOME / Colgate`;
+   Colgate phải có **3 sản phẩm** (2 link `/product/...`) + **2 CTA bộ sưu tập**.
 3. **Publish All** → toast thành công; xoá 1 campaign → phải hiện **dialog xác nhận** (không phải `confirm()`).
-4. `deals.html`: 7 campaign, không lỗi console, deal hết hạn nút xám "Đã kết thúc".
+4. `deals.html`: 11 campaign, không lỗi console; campaign chỉ có link sự kiện hiện nút CTA vàng;
+   nút "Xem toàn bộ gian hàng" mở qua `s.shopee.vn/an_redir`; deal hết hạn nút xám "Đã kết thúc".
 5. Khách (incognito) → "Mua ngay" → modal → "Tiếp tục mua" → link có `sub_id=deal_guest`.
 6. Đã login → "Mua ngay" → mở Shopee + có row mới:
    ```sql
@@ -341,6 +369,7 @@ where affiliate_url not like '%sub_id=' || sub_id || '%';
 | minor | `ADMIN_EMAILS` hardcode ở `admin-deals.js` + `auth.js` (chỉ UI) | Nguồn sự thật là `deal_admins` |
 | minor | Danh sách campaign public/admin chưa phân trang (`limit 50` ở admin) | Thêm paging khi data lớn |
 | minor | `deals.html` vẫn copy inline `openDrawer/updateDrawerUser` từ `main.js` (AGENTS.md §3.1) | Tách `drawer.js` dùng chung |
+| minor | CTA sự kiện/voucher dùng `sub_id` sinh ở client, **không có row** trong `affiliate_links` → CSV import bỏ qua, đơn phát sinh từ trang sự kiện không cộng hoa hồng vào ví user (chỉ kích hoạt cookie affiliate) | Muốn cộng ví: thêm RPC `generate_action_link(p_url)` tạo row `affiliate_links` như `generate_deal_affiliate_link` |
 | minor | Admin hiển thị `end_date` dạng ISO | Format `dd/mm` |
 
 ---
@@ -353,7 +382,7 @@ where affiliate_url not like '%sub_id=' || sub_id || '%';
 | Thêm cột vào `deal_campaigns` | `grant select (ten_cot) ... to anon, authenticated;` (xem §4.3) |
 | Đổi affiliate ID | `assets/js/config.js` + hằng `c_affiliate_id` trong RPC + seed `deal_guest` + secret `SHOPEE_AFFILIATE_ID` của edge function |
 | Thêm admin | INSERT vào `deal_admins` (§7) |
-| Chạy migration | `202610170001 → 202610180001 → 202610190001 → 202610200001` (`supabase db push`) |
+| Chạy migration | `202610170001 → 202610180001 → 202610190001 → 202610200001 → 202610230001` (`supabase db push`) |
 | Đổi fixture test | `plans/deal_hot.txt` là input của `deal-parser.test.js` — sửa fixture phải sửa assert |
 
 ---
@@ -366,4 +395,5 @@ where affiliate_url not like '%sub_id=' || sub_id || '%';
 | v2 (hardening) | RLS admin thật (`deal_admins`); RPC tự sinh `sub_id` + URL (bỏ tham số URL từ client); CHECK ngày/category; index sort; seed `deal_guest`; chống spam bằng reuse 30' + dedupe click; ẩn `raw_content`; sửa parser (ngày/brand/tên SP/voucher); publish rollback + retry; event delegation; `waitForAuth`; aria cho header/drawer; dialog xác nhận; responsive admin |
 | v3 (UI grid) | Sửa tràn ngang product grid (`min-width: 0`, `minmax(0,1fr)`); nút mua wrap/stack; clamp tên SP đúng (inner span + `lh`); badge thẳng hàng |
 | v4 (nav) | Bỏ "Tính năng"/"Cách hoạt động" khỏi desktop nav + drawer (đồng bộ 4 trang); xoá rule ẩn `nth-child` trong `responsive.css` |
+| v6 (action links) | Thêm cột `action_links` (migration `202610230001`): link `/m/`, `/user/voucher-wallet/`, `?shopCollection=` hiện thành CTA thay vì bị nuốt; parser nhận thêm `/product/<shopId>/<itemId>` và mọi dạng `<slug>-i.<shopId>.<itemId>`; `store_url` loại trừ link sản phẩm/landing; nút gian hàng bọc affiliate; sửa giá `1.5 triệu`/`13.6 inch` bị đọc thành ngày làm deal hiện "Đã kết thúc" oan |
 | v5 (post voucher) | Bắt mã voucher dạng `🎟️ CODE` (không có "Mã:"); post không có link sản phẩm + tiêu đề nhắc voucher → category `Voucher`; không lặp mã/mô tả voucher trong highlights; bỏ footer rỗng khi campaign không có `store_url`; voucher chip không bị bóp chữ trên mobile |

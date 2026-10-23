@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>vn.shopee.affiliate.autoimport</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/sotatek/.nvm/versions/node/v20.20.2/bin/node</string>
+        <string>/Users/sotatek/Downloads/shopee_money/scripts/auto-import.mjs</string>
+    </array>
+
+    <!-- Chạy mỗi ngày lúc 12:00 trưa -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>12</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+
+    <!-- Thư mục làm việc -->
+    <key>WorkingDirectory</key>
+    <string>/Users/sotatek/Downloads/shopee_money/scripts</string>
+
+    <!-- Log files -->
+    <key>StandardOutPath</key>
+    <string>/Users/sotatek/Downloads/shopee_money/scripts/logs/launchd-stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/sotatek/Downloads/shopee_money/scripts/logs/launchd-stderr.log</string>
+
+    <!-- Biến môi trường -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/sotatek/.nvm/versions/node/v20.20.2/bin</string>
+        <key>HOME</key>
+        <string>/Users/sotatek</string>
+        <key>SESSION_DIR</key>
+        <string>/Users/sotatek/Downloads/shopee_money/scripts/.session</string>
+    </dict>
+
+    <!-- Khởi động lại nếu crash -->
+    <key>KeepAlive</key>
+    <false/>
+
+    <!-- Chạy nếu máy đang bật -->
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>

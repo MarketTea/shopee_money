@@ -210,6 +210,9 @@ function renderParsedCampaign(campaign, idx) {
             <span>📂 ${escapeHtml(campaign.category || 'Khác')}</span>
             ${campaign.end_date ? `<span>📅 ${escapeHtml(campaign.end_date)}</span>` : ''}
             <span>🛒 ${campaign.products.length} sản phẩm</span>
+            ${campaign.action_links && campaign.action_links.length
+              ? `<span>🎯 ${campaign.action_links.length} CTA</span>`
+              : ''}
             ${campaign.voucher_codes.length ? `<span>🎟️ ${campaign.voucher_codes.length} voucher</span>` : ''}
           </div>
 
@@ -236,7 +239,17 @@ function renderParsedCampaign(campaign, idx) {
               ${campaign.products.length > products.length
                 ? `<div class="parse-product-more">+${campaign.products.length - products.length} sản phẩm khác</div>`
                 : ''}
-            </div>` : '<div class="parse-no-products">⚠️ Không tìm thấy sản phẩm với link affiliate</div>'}
+            </div>` : ''}
+          ${campaign.action_links && campaign.action_links.length ? `
+            <div class="parse-products-preview" style="background:#FFFBEB; border-color:#F0C000;">
+              <div style="font-size:0.78rem; font-weight:800; color:#856D00; margin-bottom:4px;">🎯 ${campaign.action_links.length} link sự kiện/voucher:</div>
+              ${campaign.action_links.map((al) => `
+                <div class="parse-product-item">🔗 ${escapeHtml(al.label.substring(0, 60))} <span style="color:#ee4d2d;font-weight:800;">(${escapeHtml(al.cta_label)})</span></div>
+              `).join('')}
+            </div>` : ''}
+          ${!products.length && !(campaign.action_links && campaign.action_links.length)
+            ? '<div class="parse-no-products">⚠️ Không tìm thấy sản phẩm với link affiliate hoặc link sự kiện</div>'
+            : ''}
         </div>
       </div>
     </div>
@@ -301,6 +314,9 @@ function validateParsedCampaigns() {
     }
     if (!Array.isArray(campaign.products)) {
       problems.push(`${label}: danh sách sản phẩm bị lỗi`);
+    }
+    if (campaign.action_links != null && !Array.isArray(campaign.action_links)) {
+      problems.push(`${label}: danh sách CTA sự kiện bị lỗi`);
     }
   });
 
@@ -371,6 +387,9 @@ async function publishAllCampaigns() {
           highlights: campaign.highlights,
           voucher_codes: campaign.voucher_codes,
           store_url: campaign.store_url || null,
+          // CTA sự kiện / voucher / bộ sưu tập (cột có từ migration 202610230001).
+          // Phải push migration trước khi publish, nếu không PostgREST trả 42703.
+          action_links: Array.isArray(campaign.action_links) ? campaign.action_links : [],
           raw_content: campaign.raw_content,
           is_active: true,
           sort_order: i

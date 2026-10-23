@@ -11,10 +11,14 @@
  *  - Không tự mở tab Shopee sau khi login (bị popup blocker + bất ngờ cho user).
  */
 
-const DEAL_COLUMNS = [
+const DEAL_COLUMNS_BASE = [
   'id', 'title', 'brand', 'category', 'start_date', 'end_date',
   'highlights', 'voucher_codes', 'store_url', 'is_active', 'sort_order', 'created_at'
 ].join(',');
+
+// Cột CTA sự kiện/voucher (migration 202610230001). Tách khỏi base để trang
+// public vẫn chạy được nếu migration chưa được push (xem loadDeals()).
+const DEAL_COLUMNS = `${DEAL_COLUMNS_BASE},action_links`;
 
 const DEAL_PRODUCT_COLUMNS = [
   'id', 'name', 'description', 'affiliate_url',
@@ -65,12 +69,16 @@ async function loadDeals() {
   }
 
   try {
-    const { data, error } = await supabaseClient
-      .from('deal_campaigns')
-      .select(`${DEAL_COLUMNS}, deal_products ( ${DEAL_PRODUCT_COLUMNS} )`)
-      .eq('is_active', true)
-      .order('end_date', { ascending: true, nullsFirst: false })
-      .order('created_at', { ascending: false });
+    let { data, error } = await selectCampaigns(DEAL_COLUMNS);
+
+    // Chưa push migration action_links → vẫn render bình thường, chỉ thiếu CTA sự kiện.
+    if (error && isMissingColumnError(error, 'action_links')) {
+      console.warn(
+        'DB chưa có cột deal_campaigns.action_links — chạy migration 202610230001. '
+        + 'CTA sự kiện/voucher tạm thời bị ẩn.'
+      );
+      ({ data, error } = await selectCampaigns(DEAL_COLUMNS_BASE));
+    }
 
     if (error) throw error;
 
@@ -94,9 +102,35 @@ async function loadDeals() {
   }
 }
 
+/** Query campaign + products, dùng chung cho select đầy đủ và select fallback. */
+function selectCampaigns(columns) {
+  return supabaseClient
+    .from('deal_campaigns')
+    .select(`${columns}, deal_products ( ${DEAL_PRODUCT_COLUMNS} )`)
+    .eq('is_active', true)
+    .order('end_date', { ascending: true, nullsFirst: false })
+    .order('created_at', { ascending: false });
+}
+
+/** PostgREST trả 42703 khi SELECT một cột chưa tồn tại (migration chưa push). */
+function isMissingColumnError(error, column) {
+  if (!error) return false;
+  const message = String(error.message || '');
+  return (error.code === '42703' || /does not exist/i.test(message)) && message.includes(column);
+}
+
 function normalizeCampaign(campaign) {
   const products = Array.isArray(campaign.deal_products) ? campaign.deal_products : [];
   const vouchers = Array.isArray(campaign.voucher_codes) ? campaign.voucher_codes : [];
+  // action_links: CTA sự kiện / voucher / bộ sưu tập (parser sinh ra, lưu jsonb).
+  const actionLinks = (Array.isArray(campaign.action_links) ? campaign.action_links : [])
+    .filter((link) => link && typeof link.url === 'string' && /^https:\/\//i.test(link.url))
+    .map((link) => ({
+      label: String(link.label || 'Xem ưu đãi Shopee'),
+      url: link.url,
+      cta_label: String(link.cta_label || 'Xem ngay →')
+    }))
+    .slice(0, 6);
 
   return {
     ...campaign,
@@ -104,7 +138,8 @@ function normalizeCampaign(campaign) {
     voucher_codes: vouchers.filter((voucher) => voucher && voucher.code),
     deal_products: products
       .filter((product) => product && product.id && product.affiliate_url)
-      .sort((a, b) => (Number(a.sort_order) || 0) - (Number(b.sort_order) || 0))
+      .sort((a, b) => (Number(a.sort_order) || 0) - (Number(b.sort_order) || 0)),
+    action_links: actionLinks
   };
 }
 
@@ -222,10 +257,28 @@ function renderCampaignCard(campaign) {
        </div>`
     : '';
 
+  // Action Cards: CTA cho link sự kiện / voucher / bộ sưu tập. Hiển thị cả khi
+  // campaign có sản phẩm lẻ (bài post thường trộn cả 2 dạng).
+  const actionLinks = campaign.action_links || [];
+  const actionLinksHtml = actionLinks.length
+    ? `<div class="deal-action-links-section">
+         <div class="deal-section-title">🎯 Hành động</div>
+         <div class="deal-action-cards-grid">${actionLinks.map((al) => renderActionCard(al, expired)).join('')}</div>
+       </div>`
+    : '';
+
+  // Nút gian hàng cũng phải đi qua affiliate redirect, nếu không click sẽ
+  // mất tracking (cookie affiliate không được kích hoạt).
   const storeBtn = campaign.store_url
-    ? `<a href="${escapeHtml(campaign.store_url)}" target="_blank" rel="noopener noreferrer" class="deal-store-btn">
+    ? `<button
+         type="button"
+         class="deal-store-btn"
+         data-action="open-event"
+         data-url="${escapeHtml(campaign.store_url)}"
+         title="Mở gian hàng Shopee và kích hoạt cookie affiliate"
+       >
          🏪 Xem toàn bộ gian hàng
-       </a>`
+       </button>`
     : '';
 
   const footerHtml = storeBtn
@@ -254,6 +307,7 @@ function renderCampaignCard(campaign) {
       ${highlightsHtml}
       ${vouchersHtml}
       ${productsHtml}
+      ${actionLinksHtml}
 
       ${footerHtml}
     </article>
@@ -320,6 +374,45 @@ function renderVoucherChip(voucher) {
   `;
 }
 
+/**
+ * Render 1 action card (link sự kiện / voucher sàn).
+ * Dạng banner nổi bật với nút CTA vàng viền đen.
+ */
+function renderActionCard(actionLink, expired) {
+  const label = escapeHtml(actionLink.label || 'Xem ưu đãi Shopee');
+  const ctaLabel = escapeHtml(actionLink.cta_label || 'Xem ngay →');
+  const disabledAttrs = expired ? 'disabled aria-disabled="true" style="opacity:.55; cursor:not-allowed;"' : '';
+  const titleText = expired ? 'Deal đã kết thúc' : 'Bấm để vào trang sự kiện Shopee và nhận ưu đãi';
+
+  // Chọn icon theo loại CTA
+  let icon = '🎯';
+  const cta = (actionLink.cta_label || '').toLowerCase();
+  if (cta.includes('voucher')) icon = '🏷️';
+  else if (cta.includes('sale') || cta.includes('deal')) icon = '🔥';
+  else if (cta.includes('rẻ') || cta.includes('siêu')) icon = '💰';
+  else if (cta.includes('freeship')) icon = '🚚';
+
+  return `
+    <div class="deal-action-card">
+      <div class="deal-action-card-icon">${icon}</div>
+      <div class="deal-action-card-body">
+        <p class="deal-action-card-label" title="${label}">${label}</p>
+      </div>
+      <button
+        type="button"
+        class="btn-action-cta"
+        data-action="open-event"
+        data-url="${escapeHtml(actionLink.url)}"
+        title="${escapeHtml(titleText)}"
+        aria-label="${ctaLabel}"
+        ${disabledAttrs}
+      >
+        ${ctaLabel}
+      </button>
+    </div>
+  `;
+}
+
 /* ── Event delegation (thay cho inline onclick) ───────────────────────────── */
 
 function bindDealsUi() {
@@ -345,7 +438,17 @@ function bindDealsUi() {
       }
 
       const voucherBtn = event.target.closest('[data-action="copy-voucher"]');
-      if (voucherBtn) copyVoucher(voucherBtn.dataset.code || '', voucherBtn);
+      if (voucherBtn) {
+        copyVoucher(voucherBtn.dataset.code || '', voucherBtn);
+        return;
+      }
+
+      // Nút CTA mở link sự kiện/voucher sàn
+      const eventBtn = event.target.closest('[data-action="open-event"]');
+      if (eventBtn) {
+        if (eventBtn.disabled) return;
+        openEventLinkWithAffiliate(eventBtn.dataset.url || '', eventBtn);
+      }
     });
   }
 }
@@ -498,6 +601,31 @@ async function buyProductWithCashback(product, btnElement) {
       btnElement.innerHTML = originalContent
         || '<span>Mua ngay →</span><span class="buy-cashback-badge">Hoàn tiền ví</span>';
     }
+  }
+}
+
+/* ── Event / Voucher Landing Page Handler ─────────────────────────────────── */
+
+/**
+ * Khi user click vào nút CTA của action card (link sự kiện /m/...):
+ * 1. Mở tab trước (tránh popup blocker)
+ * 2. Bọc link gốc vào Shopee affiliate redirect với fallback sub_id
+ *    (sub_id dạng guest khi chưa login, user-level khi đã login)
+ * 3. Cookie affiliate được khởi tạo trên Shopee — mọi đơn hàng
+ *    user mua trong phiên đó sẽ tính hoa hồng cho Admin.
+ */
+function openEventLinkWithAffiliate(targetUrl, btnElement) {
+  if (!targetUrl) return;
+
+  const subId = buildFallbackSubId();
+  const finalUrl = buildShopeeAffiliateUrl(targetUrl, subId);
+
+  window.open(finalUrl, '_blank', 'noopener,noreferrer');
+
+  if (currentUser) {
+    showToast('🎉 Đang mở trang ưu đãi Shopee. Cookie affiliate đã được kích hoạt!');
+  } else {
+    showToast('🛍️ Đang mở trang ưu đãi Shopee. Đăng nhập để nhận hoàn tiền tự động!');
   }
 }
 

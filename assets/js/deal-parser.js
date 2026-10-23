@@ -10,7 +10,8 @@
  *   store_url|null, highlights: string[], voucher_codes: [{code, desc}],
  *   raw_content, is_active, sort_order,
  *   products: [{ name, description, affiliate_url, discount_label,
- *                has_gift, gift_description, sort_order }]
+ *                has_gift, gift_description, sort_order }],
+ *   action_links: [{ label, url, cta_label }]   // CTA sự kiện/voucher/bộ sưu tập
  * }
  */
 
@@ -23,11 +24,34 @@ const RE_EMPTY_PARENS = /\(\s*\)/g;
 const RE_SPACES = /\s+/g;
 
 const RE_ANY_URL = /https?:\/\//i;
-const RE_AFFILIATE_LINK = /https?:\/\/(?:[a-z0-9-]+\.)*shopee\.vn\/(?:a-i\.|abc-i\.)[^\s)]*/i;
+
+/**
+ * Link TRANG SẢN PHẨM Shopee — 2 dạng tồn tại song song trong các bài post:
+ *   1. link affiliate rút gọn:  /a-i.<shopId>.<itemId>, /abc-i.<shopId>.<itemId>
+ *      (tổng quát: mọi tiền tố "<slug>-i." do Shopee Affiliate sinh ra)
+ *   2. link sản phẩm chuẩn:     /product/<shopId>/<itemId>
+ *      (dạng copy trực tiếp từ app/web Shopee — trước đây parser bỏ sót)
+ */
+const RE_AFFILIATE_LINK = /https?:\/\/(?:[a-z0-9-]+\.)*shopee\.vn\/(?:product\/\d+\/\d+|[a-z0-9._%-]*-i\.\d+\.\d+)[^\s)]*/i;
 const RE_ALL_SHOPEE_URL = /https?:\/\/(?:[a-z0-9-]+\.)*shopee\.vn\/[^\s)]*/gi;
 
+/**
+ * Link trang sự kiện / kho voucher / bộ sưu tập Shopee:
+ *   - /m/...                      (landing page campaign, sale, ShopeeVIP)
+ *   - /user/voucher-wallet/...    (ví voucher)
+ *   - /voucher...                 (trang voucher)
+ *   - link có query               (VD: /<shop>?shopCollection=<id>)
+ * Các link này khi user bấm vào sẽ được bọc bằng affiliate redirect,
+ * kích hoạt cookie affiliate cho mọi đơn hàng user mua trong phiên đó.
+ */
+const RE_EVENT_PATH = /https?:\/\/(?:[a-z0-9-]+\.)*shopee\.vn\/(?:m\/|user\/voucher|voucher[\/?#])[^\s)]*/i;
+const RE_QUERY_LINK = /\?[^#\s]*=/;
+
+/** Đường dẫn không bao giờ là gian hàng (landing / giỏ hàng / thanh toán…). */
+const RE_NON_STORE_PATH = /\/(?:m|cart|checkout|buyer|search|product)\//i;
+
 /** Dòng được coi là "tên sản phẩm" (emoji sản phẩm / bullet / "1. [KOL]"). */
-const RE_PRODUCT_LINE = /^(?:[🧴✨🌸🤍🦷💗🎈]|▪|•|\d+\.\s*\[?KOL\]?)/u;
+const RE_PRODUCT_LINE = /^(?:[🧴✨🌸🤍🦷💗🎈💜🪄]|▪|•|\d+\.\s*\[?KOL\]?)/u;
 const RE_VARIANT_LINE = /^[▪•]/u;
 const RE_BULLET_LINE = /^(?:\p{Extended_Pictographic}|[+])/u;
 const RE_GIFT_LINE = /🎁|quà tặng/i;
@@ -84,6 +108,12 @@ function parseBlock(block) {
   // Tính voucher trước để highlights có thể bỏ qua mã/mô tả voucher (tránh lặp)
   const voucherCodes = extractVoucherCodes(lines);
   const highlights = extractHighlights(lines, title, voucherCodes);
+  const products = extractProducts(lines, title);
+
+  // Link sự kiện / voucher / bộ sưu tập → action card CTA (bọc affiliate khi click).
+  // Luôn bóc, kể cả khi campaign có sản phẩm lẻ: bài post thường trộn cả 2 dạng.
+  const storeUrl = extractStoreUrl(block);
+  const actionLinks = extractEventLinks(lines, title, storeUrl ? [storeUrl] : []);
 
   return {
     title: title.substring(0, 200),
@@ -91,13 +121,14 @@ function parseBlock(block) {
     category: inferCategory(block, title),
     start_date: startDate,
     end_date: endDate,
-    store_url: extractStoreUrl(block),
+    store_url: storeUrl,
     highlights,
     voucher_codes: voucherCodes,
     raw_content: block,
     is_active: true,
     sort_order: 0,
-    products: extractProducts(lines, title)
+    products,
+    action_links: actionLinks
   };
 }
 
@@ -119,6 +150,33 @@ function hasWord(text, words) {
     const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     return new RegExp(`(^|[^\\p{L}])${escaped}(?![\\p{L}])`, 'iu').test(text);
   });
+}
+
+/* ── Phân loại link Shopee ────────────────────────────────────────────────── */
+
+/** Bỏ dấu câu dính cuối URL khi paste từ chat: ".../abc)" "," "." ";" "'" */
+function cleanShopeeUrl(raw) {
+  return String(raw || '').replace(/[),.;:'"]+$/, '');
+}
+
+/** Tất cả URL shopee.vn trong 1 đoạn text (đã bỏ dấu câu cuối). */
+function extractShopeeUrls(text) {
+  return (String(text || '').match(RE_ALL_SHOPEE_URL) || []).map(cleanShopeeUrl);
+}
+
+/** URL có phải trang sản phẩm (a-i. / abc-i. / product/<shop>/<item>) không. */
+function isProductUrl(url) {
+  return RE_AFFILIATE_LINK.test(cleanShopeeUrl(url));
+}
+
+/**
+ * URL có phải trang sự kiện / voucher / bộ sưu tập (không phải sản phẩm) không.
+ * Link có query (shopCollection, campaignId…) cũng được coi là landing page.
+ */
+function isEventUrl(url) {
+  const clean = cleanShopeeUrl(url);
+  if (isProductUrl(clean)) return false;
+  return RE_EVENT_PATH.test(clean) || RE_QUERY_LINK.test(clean);
 }
 
 /* ── Tiêu đề ──────────────────────────────────────────────────────────────── */
@@ -157,6 +215,19 @@ function toIsoDate(day, month, year) {
   return date.toISOString().slice(0, 10);
 }
 
+/** Một mốc ngày đơn lẻ: "20/10", "17.10". */
+const RE_SINGLE_DATE = /(?<![\d.,/])(\d{1,2})[./](\d{1,2})(?![\d.,/–—-])/g;
+
+/**
+ * "1.5 triệu", "13.6 inch", "9.9%", "1.2kg"… là giá/đơn vị, KHÔNG phải ngày.
+ * Thiếu guard này, tiêu đề "Giảm đến 1.5 triệu" bị parse thành 01/05 → deal
+ * hiện "Đã kết thúc" oan và nút mua bị disable.
+ */
+function isMeasurementContext(text, match) {
+  const tail = text.slice(match.index + match[0].length, match.index + match[0].length + 12);
+  return /^\s*(?:triệu|nghìn|ngàn|tr\.?\b|k\b|kg\b|g\b|mg\b|ml\b|gb\b|tb\b|cm\b|mm\b|inch\b|%|đ)/i.test(tail);
+}
+
 /**
  * Bóc ngày bắt đầu/kết thúc.
  * Hỗ trợ: "17.10 – 20.10", "15-16.10", "20/10", "từ 15.10 đến 20.10".
@@ -186,7 +257,8 @@ function extractDates(block) {
   }
 
   // 20/10 (một ngày) — có thể có ngày thứ 2 trong block ("15.10 … 20.10")
-  const singles = [...block.matchAll(/(?<![\d.,/])(\d{1,2})[./](\d{1,2})(?![\d.,/–—-])/g)]
+  const singles = [...block.matchAll(RE_SINGLE_DATE)]
+    .filter((match) => !isMeasurementContext(block, match))
     .map((m) => toIsoDate(m[1], m[2], year))
     .filter(Boolean);
 
@@ -305,18 +377,109 @@ function inferCategory(block, title) {
 /* ── Store URL ────────────────────────────────────────────────────────────── */
 
 function extractStoreUrl(block) {
-  const matches = block.match(RE_ALL_SHOPEE_URL) || [];
+  const matches = extractShopeeUrls(block);
 
-  for (const raw of matches) {
-    const url = raw.replace(/[),.;:'"]+$/, '');
-
-    if (/(?:\/a-i\.|\/abc-i\.)/i.test(url)) continue;   // link sản phẩm
-    if (/\/user\//i.test(url)) continue;                // ví voucher
-    if (/\/(?:m|search|cart|checkout|buyer)\//i.test(url)) continue;
+  for (const url of matches) {
+    if (isProductUrl(url)) continue;              // link sản phẩm
+    if (isEventUrl(url)) continue;                // /m/, ví voucher, ?shopCollection=...
+    if (RE_NON_STORE_PATH.test(url)) continue;    // phòng hờ: cart/checkout/search...
 
     return url;
   }
   return null;
+}
+
+/* ── Event / Voucher Action Links ─────────────────────────────────────────── */
+
+/** Heading bộ sưu tập: dòng IN HOA (≥70% chữ cái là chữ hoa), 3–80 ký tự. */
+function looksLikeCollectionHeading(line) {
+  const cleaned = String(line || '').trim();
+  if (cleaned.length < 3 || cleaned.length > 80) return false;
+
+  const letters = cleaned.replace(/[^\p{L}]/gu, '');
+  if (letters.length < 3) return false;
+
+  const upper = cleaned.replace(/[^\p{Lu}]/gu, '');
+  return upper.length / letters.length >= 0.7;
+}
+
+/**
+ * Bóc tách các link sự kiện / voucher / bộ sưu tập từ block text thành
+ * danh sách action_links dùng để hiển thị nút CTA trên trang deal.
+ *
+ * Mỗi entry: { label, url, cta_label }
+ *  - label: mô tả ngắn lấy từ dòng text phía trên/dưới link
+ *  - url: link gốc Shopee (sẽ được bọc bằng affiliate redirect khi user click)
+ *  - cta_label: nhãn nút hành động ('Lưu Voucher', 'Xem Sale', 'Xem Bộ Sưu Tập', ...)
+ *
+ * @param {string[]} lines
+ * @param {string} title
+ * @param {string[]} [excludeUrls] URL đã dùng cho store_url → không lặp lại
+ */
+function extractEventLinks(lines, title, excludeUrls = []) {
+  const results = [];
+  const seen = new Set(excludeUrls.map(cleanShopeeUrl));
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const urls = extractShopeeUrls(line).filter(isEventUrl);
+
+    for (const url of urls) {
+      if (seen.has(url)) continue;
+      seen.add(url);
+
+      const isCollection = /shopcollection|shopid=/i.test(url);
+
+      // Bộ sưu tập: ưu tiên heading IN HOA phía trên (VD: "BỘ SƯU TẬP HARRY POTTER")
+      // vì dòng sát link thường chỉ là "Voucher giảm đến 25%" (giống nhau ở mọi block).
+      let label = '';
+      if (isCollection) {
+        for (let j = i - 1; j >= Math.max(0, i - 4) && !label; j--) {
+          const candidate = (lines[j] || '').trim();
+          if (!candidate || RE_ANY_URL.test(candidate)) continue;
+          const cleaned = stripEmojis(candidate).replace(/^[*✅•+\-–]+\s*/, '');
+          if (looksLikeCollectionHeading(cleaned)) label = cleaned;
+        }
+      }
+
+      // Fallback: mô tả ngắn từ dòng trước/sau (bỏ qua dòng trống/URL khác)
+      for (let j = i - 1; j >= Math.max(0, i - 3) && !label; j--) {
+        const candidate = (lines[j] || '').trim();
+        if (!candidate || RE_ANY_URL.test(candidate)) continue;
+        const cleaned = stripEmojis(candidate).replace(/^[*✅•+\-–]+\s*/, '');
+        if (cleaned.length >= 4 && cleaned.length <= 120) label = cleaned;
+      }
+      if (!label) {
+        for (let j = i + 1; j <= Math.min(lines.length - 1, i + 2) && !label; j++) {
+          const candidate = (lines[j] || '').trim();
+          if (!candidate || RE_ANY_URL.test(candidate)) continue;
+          const cleaned = stripEmojis(candidate).replace(/^[*✅•+\-–]+\s*/, '');
+          if (cleaned.length >= 4 && cleaned.length <= 120) label = cleaned;
+        }
+      }
+      if (!label) label = stripEmojis(title).substring(0, 80);
+
+      // Suy luận nhãn nút CTA từ URL hoặc nội dung
+      let cta_label = 'Xem deal →';
+      const urlLower = url.toLowerCase();
+      if (isCollection) cta_label = 'Xem Bộ Sưu Tập →';
+      else if (/voucher|ma-giam|giam-gia/.test(urlLower)) cta_label = 'Lưu Voucher →';
+      else if (/sale|deal|flash|khuyen-mai/.test(urlLower)) cta_label = 'Xem Sale →';
+      else if (/sieu-re|re-hon|dong-gia/.test(urlLower)) cta_label = 'Mua Siêu Rẻ →';
+      else if (/freeship/.test(urlLower)) cta_label = 'Nhận Freeship →';
+      else if (/cuoi-thang|giua-thang|dau-thang/.test(urlLower)) cta_label = 'Xem Deal →';
+
+      results.push({
+        label: label.substring(0, 120),
+        url,
+        cta_label
+      });
+
+      if (results.length >= 5) return results;
+    }
+  }
+
+  return results;
 }
 
 /* ── Highlights ───────────────────────────────────────────────────────────── */
@@ -609,6 +772,10 @@ if (typeof module !== 'undefined' && module.exports) {
     extractHighlights,
     extractVoucherCodes,
     extractProducts,
+    extractEventLinks,
+    extractShopeeUrls,
+    isProductUrl,
+    isEventUrl,
     toIsoDate
   };
 }

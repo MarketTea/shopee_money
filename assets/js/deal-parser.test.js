@@ -30,12 +30,80 @@ const isValidIsoDate = (value) => {
 };
 
 test('parse được toàn bộ campaign trong fixture', () => {
-  assert.equal(campaigns.length, 7);
+  assert.equal(campaigns.length, 11);
 
   for (const campaign of campaigns) {
     assert.ok(campaign.title.length > 3, `title rỗng: ${campaign.title}`);
     assert.ok(campaign.raw_content.length > 0);
   }
+});
+
+test('mọi link Shopee trong fixture đều được convert (sản phẩm / store / CTA)', () => {
+  const urls = [...new Set(
+    (FIXTURE.match(/https?:\/\/[^\s]*?shopee\.vn\/[^\s]+/g) || [])
+      .map((url) => url.replace(/[),.;:'"]+$/, ''))
+  )];
+
+  const converted = new Set();
+  for (const campaign of campaigns) {
+    if (campaign.store_url) converted.add(campaign.store_url);
+    for (const product of campaign.products) converted.add(product.affiliate_url);
+    for (const action of campaign.action_links || []) converted.add(action.url);
+  }
+
+  const missing = urls.filter((url) => !converted.has(url));
+  assert.deepEqual(missing, [], `link chưa được convert: ${missing.join(', ')}`);
+  assert.ok(urls.length >= 40, `fixture ít link quá: ${urls.length}`);
+});
+
+test('nhận đủ mọi định dạng link sản phẩm (a-i / abc-i / product)', () => {
+  assert.equal(parser.isProductUrl('https://shopee.vn/a-i.111138057.42733385498'), true);
+  assert.equal(parser.isProductUrl('https://shopee.vn/abc-i.111138057.18876673152'), true);
+  assert.equal(parser.isProductUrl('https://shopee.vn/product/130860061/54609000076'), true);
+  assert.equal(
+    parser.isProductUrl('https://shopee.vn/product/130860061/54609000076?sp_atk=abc'),
+    true
+  );
+  assert.equal(parser.isProductUrl('https://shopee.vn/innisfreevietnam_officialstore'), false);
+  assert.equal(
+    parser.isProductUrl('https://shopee.vn/colgate.palmolive_vietnam?shopCollection=1'),
+    false
+  );
+
+  const colgate = campaigns.find((c) => c.title.includes('Colgate'));
+
+  assert.equal(colgate.products.length, 3, 'phải lấy đủ 3 sản phẩm Colgate');
+  assert.ok(
+    colgate.products.some((p) => p.affiliate_url === 'https://shopee.vn/product/130860061/54609000076'),
+    'thiếu link dạng /product/<shopId>/<itemId>'
+  );
+  assert.equal(colgate.store_url, 'https://shopee.vn/colgate.palmolive_vietnam');
+});
+
+test('link sự kiện / voucher / bộ sưu tập → action_links (CTA)', () => {
+  assert.equal(parser.isEventUrl('https://shopee.vn/m/15-sale-giua-thang'), true);
+  assert.equal(parser.isEventUrl('https://shopee.vn/m/goi-ShopeeVIP'), true);
+  assert.equal(parser.isEventUrl('https://shopee.vn/user/voucher-wallet/'), true);
+  assert.equal(
+    parser.isEventUrl('https://shopee.vn/colgate.palmolive_vietnam?shopCollection=275423160'),
+    true
+  );
+  assert.equal(parser.isEventUrl('https://shopee.vn/product/130860061/54609000076'), false);
+  assert.equal(parser.isEventUrl('https://shopee.vn/innisfreevietnam_officialstore'), false);
+
+  const colgate = campaigns.find((c) => c.title.includes('Colgate'));
+  assert.equal(colgate.action_links.length, 2);
+  assert.ok(colgate.action_links.every((a) => a.url.includes('?shopCollection=')));
+  assert.ok(colgate.action_links.every((a) => a.cta_label.includes('Bộ Sưu Tập')));
+  // Label lấy theo heading IN HOA, không phải dòng "Voucher giảm đến 25%" giống nhau
+  assert.match(colgate.action_links[0].label, /HARRY POTTER/);
+  assert.match(colgate.action_links[1].label, /OPTIC WHITE/);
+
+  const voucherWallet = campaigns.find((c) => c.title.includes('SALE LỚN GIỮA THÁNG'));
+  assert.equal(voucherWallet.action_links[0].url, 'https://shopee.vn/user/voucher-wallet/');
+
+  // Campaign vừa có sản phẩm vừa có CTA (không được nuốt mất 1 trong 2)
+  assert.ok(colgate.products.length && colgate.action_links.length);
 });
 
 test('C2: mọi ngày đều là ISO hợp lệ và end >= start', () => {
@@ -81,6 +149,22 @@ test('C2: số tiền không bị nhận nhầm thành ngày', () => {
   assert.equal(dates.endDate, null);
 });
 
+test('C2: giá / kích thước không bị nhận nhầm thành ngày', () => {
+  const year = new Date().getFullYear();
+
+  assert.equal(parser.extractDates('Giảm đến 1.5 triệu đơn từ 150.000Đ').startDate, null);
+  assert.equal(parser.extractDates('MacBook Air 13.6 inch, M5, 16GB RAM').startDate, null);
+  assert.equal(parser.extractDates('Voucher giảm đến 9.9%').startDate, null);
+
+  // Ngày thật vẫn phải nhận đúng
+  assert.equal(parser.extractDates('SALE 10.10').startDate, `${year}-10-10`);
+
+  // Regression: block công nghệ từng bị gán 2026-06-13 vì "13.6 inch"
+  const tech = campaigns.find((c) => c.title.includes('SIÊU DEAL CÔNG NGHỆ'));
+  assert.equal(tech.start_date, null);
+  assert.equal(tech.end_date, null);
+});
+
 test('C3: brand có tín hiệu rõ ràng, không có brand rác', () => {
   const byTitle = (needle) => campaigns.find((c) => c.title.includes(needle));
 
@@ -108,7 +192,7 @@ test('C4: tên sản phẩm không phải URL, không phải heading rỗng', ()
       assert.ok(!/[:：]$/.test(product.name), `tên SP kết thúc bằng ':': ${product.name}`);
       assert.match(
         product.affiliate_url,
-        /^https:\/\/shopee\.vn\/(a-i|abc-i)\./,
+        /^https:\/\/shopee\.vn\/(?:product\/\d+\/\d+|[a-z0-9._%-]*-i\.\d+\.\d+)/,
         `affiliate_url sai: ${product.affiliate_url}`
       );
     }
@@ -150,8 +234,12 @@ test('C14: voucher đúng mã, không trùng, không lấy từ "Mã giảm ..."
 test('store_url không phải link sản phẩm / ví voucher', () => {
   for (const campaign of campaigns) {
     if (!campaign.store_url) continue;
-    assert.ok(!/\/a-i\.|\/abc-i\./.test(campaign.store_url), `store là link SP: ${campaign.store_url}`);
+    assert.ok(
+      !/\/a-i\.|\/abc-i\.|\/product\//.test(campaign.store_url),
+      `store là link SP: ${campaign.store_url}`
+    );
     assert.ok(!/\/user\//.test(campaign.store_url), `store là ví voucher: ${campaign.store_url}`);
+    assert.ok(!/\?/.test(campaign.store_url), `store là landing page: ${campaign.store_url}`);
     assert.match(campaign.store_url, /^https:\/\/[a-z0-9.-]*shopee\.vn\//i);
   }
 });
